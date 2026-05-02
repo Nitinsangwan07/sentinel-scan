@@ -125,13 +125,15 @@ const server = http.createServer(async (request, response) => {
       const payload = body ? JSON.parse(body) : {};
       const target = normalizeTarget(payload.url);
       const options = normalizeScanOptions(payload.options);
+      const startedAt = Date.now();
       const result = await scanWebsite(target, options);
-      const persistedScan = {
+      const scanRecord = {
         id: crypto.randomUUID(),
         ...result,
+        durationMs: Date.now() - startedAt,
       };
+      const persistedScan = await saveScan(scanRecord);
 
-      await saveScan(persistedScan);
       sendJson(response, 200, persistedScan);
     } catch (error) {
       const statusCode = error instanceof SyntaxError ? 400 : 422;

@@ -16,34 +16,7 @@ const SECURITY_HEADERS = [
     title: "Content Security Policy is missing",
     remediation:
       "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
-  },
-  {
-    name: "x-frame-options",
-    severity: "medium",
-    title: "Clickjacking protection header is missing",
-    remediation:
-      "Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.",
-  },
-  {
-    name: "x-content-type-options",
-    severity: "medium",
-    title: "MIME sniffing protection is missing",
-    remediation: "Set X-Content-Type-Options to nosniff.",
-  },
-  {
-    name: "referrer-policy",
-    severity: "low",
-    title: "Referrer policy is missing",
-    remediation:
-      "Set Referrer-Policy to a privacy-preserving value such as strict-origin-when-cross-origin.",
-  },
-  {
-    name: "permissions-policy",
-    severity: "low",
-    title: "Permissions Policy is missing",
-    remediation:
-      "Add a Permissions-Policy header to explicitly disable browser features your application does not need.",
-  },
+  }
 ];
 
 const OUTDATED_JS_RULES = [
@@ -53,6 +26,13 @@ const OUTDATED_JS_RULES = [
 ];
 
 const SENSITIVE_PATH_PATTERN = /(login|signin|admin|dashboard|account|portal|auth)/i;
+const SCRIPT_HOST_RISK_HINT = /(raw\.githubusercontent\.com|gist\.githubusercontent\.com|pastebin\.com|rawgit\.com)/i;
+const SENSITIVE_FILE_PATHS = [
+  "/.env",
+  "/.git/HEAD",
+  "/backup.zip",
+  "/config.php.bak",
+];
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -596,6 +576,65 @@ function analyzeHtml(html, pageUrl) {
     );
   }
 
+  if (scriptHosts.length >= 4) {
+    findings.push(
+      buildFinding({
+        id: `high-third-party-script-dependency-${pageUrl}`,
+        title: "Heavy third-party script reliance detected",
+        severity: "low",
+        category: "dependencies",
+        description:
+          "The page loads scripts from several external hosts, which broadens the trusted execution surface in the browser.",
+        impact:
+          "A compromise or outage affecting an external script provider could impact integrity, availability, or privacy for this page.",
+        remediation:
+          "Review third-party script necessity, consolidate vendors where possible, and pin or self-host critical assets after validation.",
+        evidence: `External script hosts: ${scriptHosts.join(", ")}`,
+        location: pageUrl,
+      }),
+    );
+  }
+
+  if (hasPasswordField && scriptHosts.length > 0) {
+    findings.push(
+      buildFinding({
+        id: `third-party-scripts-on-password-page-${pageUrl}`,
+        title: "Third-party scripts present on a password-handling page",
+        severity: "medium",
+        category: "dependencies",
+        description:
+          "A page containing a password field also loads at least one external script from a third-party host.",
+        impact:
+          "Third-party JavaScript on authentication surfaces increases the amount of code that can influence sensitive user interactions.",
+        remediation:
+          "Minimize external scripts on login and account pages, or self-host only the assets that are operationally required.",
+        evidence: `External script hosts: ${scriptHosts.join(", ")}`,
+        location: pageUrl,
+      }),
+    );
+  }
+
+  const riskyScriptHosts = scriptHosts.filter((host) => SCRIPT_HOST_RISK_HINT.test(host));
+
+  if (riskyScriptHosts.length > 0) {
+    findings.push(
+      buildFinding({
+        id: `raw-script-source-${pageUrl}`,
+        title: "Script loaded from a raw or user-generated content host",
+        severity: "medium",
+        category: "dependencies",
+        description:
+          "The page references JavaScript from a host that is commonly used for raw files or user-generated content rather than a traditional asset delivery workflow.",
+        impact:
+          "These delivery patterns can be harder to govern and may increase supply-chain review burden.",
+        remediation:
+          "Move critical JavaScript to a governed asset pipeline or trusted CDN with explicit version pinning and review.",
+        evidence: `Matched host(s): ${riskyScriptHosts.join(", ")}`,
+        location: pageUrl,
+      }),
+    );
+  }
+
   if (targetBlankWithoutRel > 0) {
     findings.push(
       buildFinding({
@@ -789,6 +828,27 @@ function analyzeAuxiliaryFiles(auxiliaryFiles) {
   }
 
   return findings;
+}
+
+function analyzeSensitiveFiles(files) {
+  return files
+    .filter((file) => file.status === 200)
+    .map((file) =>
+      buildFinding({
+        id: `public-sensitive-file-${file.path.replace(/[^\w]+/g, "-")}`,
+        title: "Potentially sensitive file is publicly accessible",
+        severity: "high",
+        category: "content",
+        description:
+          "A file path commonly associated with secrets, repository metadata, or backups responded successfully during a passive request.",
+        impact:
+          "Public exposure of operational files can leak secrets, source-control context, or deployment artifacts to unauthenticated visitors.",
+        remediation:
+          "Remove the file from the public web root, block direct access at the server layer, and rotate any exposed secrets if necessary.",
+        evidence: `${file.path} responded with HTTP ${file.status}`,
+        location: file.url,
+      }),
+    );
 }
 
 function inspectTlsCertificate(hostname) {
@@ -1072,6 +1132,31 @@ async function crawlSite(primaryResponse, options) {
   };
 }
 
+function analyzeInventory(inventory) {
+  const findings = [];
+
+  if (inventory.loginPages.length > 0) {
+    findings.push(
+      buildFinding({
+        id: "public-auth-routes-observed",
+        title: "Public authentication or administration paths were discovered",
+        severity: "info",
+        category: "recon",
+        description:
+          "The crawl encountered one or more URLs that appear to belong to login, account, or administrative workflows.",
+        impact:
+          "This is often expected, but it identifies higher-sensitivity routes that deserve stronger transport and third-party script scrutiny.",
+        remediation:
+          "Review these routes for HTTPS enforcement, session hardening, and minimal third-party dependencies.",
+        evidence: inventory.loginPages.join(", "),
+        location: inventory.loginPages[0] || null,
+      }),
+    );
+  }
+
+  return findings;
+}
+
 function calculateRiskScore(findings) {
   const rawScore = findings.reduce((total, finding) => total + severityWeight(finding.severity), 0);
   return Math.min(100, rawScore);
@@ -1105,10 +1190,13 @@ function buildNarrative(scan) {
     .sort((left, right) => severityWeight(right.severity) - severityWeight(left.severity))
     .slice(0, 5);
 
-  const quickWins = scan.findings
-    .filter((finding) => ["headers", "cookies"].includes(finding.category))
+  const quickWins = unique(
+    scan.findings
+      .filter((finding) => ["headers", "cookies", "transport", "forms"].includes(finding.category))
+      .map((finding) => finding.remediation),
+  )
     .slice(0, 3)
-    .map((finding) => finding.remediation);
+    ;
 
   const priorityActions = topFindings.map((finding, index) => ({
     priority: index + 1,
@@ -1143,6 +1231,42 @@ function buildNarrative(scan) {
     priorityActions,
     quickWins,
   };
+}
+
+function buildTextReport(scan) {
+  const lines = [
+    "Sentinel Scan Report",
+    "====================",
+    "",
+    `Target URL: ${scan.target}`,
+    `Final URL: ${scan.finalUrl}`,
+    `Scan Timestamp: ${scan.scannedAt}`,
+    `Scan Duration: ${scan.durationMs} ms`,
+    `Risk Score: ${scan.risk.score}/100 (${scan.risk.band})`,
+    `Findings Summary: ${scan.summary.total} total findings`,
+    "",
+    "Severity Breakdown",
+    "------------------",
+  ];
+
+  for (const [severity, count] of Object.entries(scan.summary.bySeverity)) {
+    lines.push(`- ${severity}: ${count}`);
+  }
+
+  lines.push("", "Executive Summary", "-----------------", scan.report.executiveSummary, "");
+  lines.push("Recommendations", "---------------");
+
+  for (const action of scan.report.priorityActions) {
+    lines.push(`${action.priority}. ${action.action} (${action.reason})`);
+  }
+
+  lines.push("", "Top Findings", "------------");
+
+  for (const finding of scan.findings.slice(0, 10)) {
+    lines.push(`- [${finding.severity}] ${finding.title} | ${finding.location || "Global"}`);
+  }
+
+  return lines.join("\n");
 }
 
 function buildMarkdownReport(scan) {
@@ -1222,6 +1346,9 @@ export async function scanWebsite(target, requestedOptions = {}) {
     fetchOptionalFile(finalUrl, "/robots.txt", options.requestTimeoutMs),
     fetchOptionalFile(finalUrl, "/sitemap.xml", options.requestTimeoutMs),
   ]);
+  const sensitiveFiles = await Promise.all(
+    SENSITIVE_FILE_PATHS.map((filePath) => fetchOptionalFile(finalUrl, filePath, options.requestTimeoutMs)),
+  );
   const tlsInfo = finalUrl.startsWith("https://")
     ? await inspectTlsCertificate(new URL(finalUrl).hostname)
     : {
@@ -1235,7 +1362,9 @@ export async function scanWebsite(target, requestedOptions = {}) {
     ...headerAnalysis.findings,
     ...analyzeCookies(cookieInfo, finalUrl),
     ...crawl.findings,
+    ...analyzeInventory(crawl.inventory),
     ...analyzeAuxiliaryFiles(auxiliaryFiles),
+    ...analyzeSensitiveFiles(sensitiveFiles),
   ].sort((left, right) => severityWeight(right.severity) - severityWeight(left.severity));
 
   const summary = groupFindings(findings);
@@ -1255,6 +1384,7 @@ export async function scanWebsite(target, requestedOptions = {}) {
     totalPasswordForms: crawl.inventory.totalPasswordForms,
     externalScriptHosts: crawl.inventory.externalScriptHosts,
     loginPages: crawl.inventory.loginPages,
+    sensitiveFiles: sensitiveFiles.filter((file) => file.status === 200).map((file) => file.path),
   };
   const report = buildNarrative({
     target,
@@ -1293,6 +1423,7 @@ export async function scanWebsite(target, requestedOptions = {}) {
     transport: tlsInfo,
     redirectPolicy: redirectInfo,
     auxiliaryFiles,
+    sensitiveFiles,
     coverage,
     inventory,
     findings,

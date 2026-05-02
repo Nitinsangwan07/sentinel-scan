@@ -111,7 +111,8 @@ select {
 
 .hero-metric span,
 .score-card span,
-.inventory-card span {
+.inventory-card span,
+.mini-metric span {
   display: block;
   color: var(--muted);
   font-size: 0.82rem;
@@ -156,6 +157,19 @@ select {
   align-items: flex-start;
   gap: 16px;
   margin-bottom: 22px;
+}
+
+.mini-metric {
+  min-width: 110px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(61, 47, 35, 0.08);
+}
+
+.mini-metric strong {
+  display: block;
+  font-size: 1.4rem;
 }
 
 .badge,
@@ -248,6 +262,10 @@ button:hover:not(:disabled) {
   transform: translateY(-1px);
 }
 
+button.loading {
+  opacity: 0.8;
+}
+
 button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
@@ -287,6 +305,9 @@ button:disabled {
   line-height: 1.5;
   background: rgba(61, 47, 35, 0.06);
   color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .status-banner.loading {
@@ -310,6 +331,16 @@ button:disabled {
 .findings-list {
   display: grid;
   gap: 16px;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 2px solid rgba(61, 47, 35, 0.18);
+  border-top-color: currentColor;
+  animation: spin 900ms linear infinite;
+  flex: 0 0 auto;
 }
 
 .history-list.empty,
@@ -352,7 +383,7 @@ button:disabled {
 
 .scoreboard {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -388,7 +419,7 @@ button:disabled {
 }
 
 .severity-breakdown {
-  margin-top: 18px;
+  margin-top: 0;
 }
 
 .severity-chip {
@@ -404,6 +435,80 @@ button:disabled {
   color: var(--danger);
 }
 
+.severity-chip.info {
+  background: rgba(75, 108, 183, 0.14);
+  color: #35539d;
+}
+
+.severity-visuals {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 20px;
+  align-items: center;
+  margin-top: 22px;
+}
+
+.severity-chart {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  position: relative;
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  box-shadow: inset 0 0 0 18px rgba(255, 255, 255, 0.92);
+}
+
+.severity-chart::after {
+  content: "";
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: rgba(255, 250, 242, 0.96);
+  box-shadow: inset 0 0 0 1px rgba(61, 47, 35, 0.08);
+  position: absolute;
+}
+
+.severity-chart span {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.severity-chart strong,
+.severity-chart small {
+  display: block;
+}
+
+.severity-chart strong {
+  font-size: 1.5rem;
+}
+
+.severity-chart small {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.severity-chart.empty {
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow: inset 0 0 0 1px rgba(61, 47, 35, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+
+.severity-chart.empty::after {
+  display: none;
+}
+
+.disclaimer-text,
+.filter-results {
+  margin: 16px 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 .actions {
   display: flex;
   gap: 10px;
@@ -411,11 +516,19 @@ button:disabled {
 }
 
 .actions button:nth-child(2) {
-  background: linear-gradient(135deg, #16515f, #0c2e36);
+  background: linear-gradient(135deg, #8a5b11, #5b3708);
 }
 
 .actions button:nth-child(3) {
+  background: linear-gradient(135deg, #16515f, #0c2e36);
+}
+
+.actions button:nth-child(4) {
   background: linear-gradient(135deg, #69461d, #3f2508);
+}
+
+.actions button:nth-child(5) {
+  background: linear-gradient(135deg, #54626a, #313a40);
 }
 
 .filters-grid {
@@ -446,6 +559,11 @@ button:disabled {
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid rgba(61, 47, 35, 0.08);
+}
+
+.report-highlight {
+  border-color: rgba(191, 91, 54, 0.18);
+  background: linear-gradient(160deg, rgba(255, 244, 236, 0.88), rgba(255, 255, 255, 0.72));
 }
 
 .pages-grid {
@@ -493,6 +611,11 @@ button:disabled {
   padding: 7px 12px;
 }
 
+.meta-pill.sensitive {
+  background: rgba(165, 35, 35, 0.12);
+  color: var(--danger);
+}
+
 @keyframes fade-up {
   from {
     opacity: 0;
@@ -502,6 +625,12 @@ button:disabled {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -520,7 +649,8 @@ button:disabled {
   }
 
   .scoreboard,
-  .inventory-grid {
+  .inventory-grid,
+  .severity-visuals {
     grid-template-columns: 1fr;
   }
 
@@ -536,5 +666,9 @@ button:disabled {
   .actions button,
   .input-row button {
     width: 100%;
+  }
+
+  .severity-chart {
+    margin: 0 auto;
   }
 }

@@ -89,7 +89,8 @@
           </form>
 
           <div id="status-banner" class="status-banner idle">
-            Ready for an authorized passive scan.
+            <span id="status-spinner" class="spinner" aria-hidden="true"></span>
+            <span id="status-text">Ready for an authorized passive scan.</span>
           </div>
         </section>
 
@@ -98,6 +99,10 @@
             <div>
               <p class="section-label">Saved Scans</p>
               <h2>Recent History</h2>
+            </div>
+            <div class="mini-metric">
+              <span>Total Scans</span>
+              <strong id="total-scans">0</strong>
             </div>
           </div>
           <div id="history-list" class="history-list empty">
@@ -139,11 +144,21 @@
               <span>Final URL</span>
               <strong id="final-url">Waiting for scan</strong>
             </div>
+            <div class="score-card">
+              <span>Scan Duration</span>
+              <strong id="scan-duration">--</strong>
+            </div>
           </div>
 
-          <div id="severity-breakdown" class="severity-breakdown empty">
-            Run a scan to populate the severity distribution.
+          <div class="severity-visuals">
+            <div id="severity-chart" class="severity-chart empty">Run a scan</div>
+            <div class="severity-side">
+              <div id="severity-breakdown" class="severity-breakdown empty">
+                Run a scan to populate the severity distribution.
+              </div>
+            </div>
           </div>
+          <p class="disclaimer-text">Findings are heuristic and should be manually validated.</p>
         </section>
 
         <section class="panel filters-panel">
@@ -179,6 +194,7 @@
               <input id="search-filter" type="search" placeholder="headers, cookie, CSP..." />
             </label>
           </div>
+          <p id="filter-results" class="filter-results">Showing 0 findings.</p>
         </section>
 
         <section class="panel wide-panel">
@@ -188,6 +204,8 @@
               <h2>Executive Narrative</h2>
             </div>
             <div class="actions">
+              <button id="download-pdf" type="button" disabled>Download PDF</button>
+              <button id="download-txt" type="button" disabled>Download TXT</button>
               <button id="download-json" type="button" disabled>Download JSON</button>
               <button id="download-md" type="button" disabled>Download Markdown</button>
               <button id="download-html" type="button" disabled>Download HTML</button>
@@ -221,6 +239,7 @@
           <div id="findings-list" class="findings-list empty">
             No findings to display yet.
           </div>
+          <p class="disclaimer-text">Findings are heuristic and should be manually validated.</p>
         </section>
       </main>
     </div>

@@ -1,232 +1,906 @@
-[
-  {
-    "id": "e2ccf1ad-6233-4b1a-9213-a8685ec54a55",
-    "product": "Sentinel Scan",
-    "version": "2.0.0",
-    "target": "http://localhost:3000/",
-    "finalUrl": "http://localhost:3000/",
-    "scannedAt": "2026-05-02T11:13:18.077Z",
-    "options": {
-      "includeSubpages": true,
-      "maxPages": 3,
-      "requestTimeoutMs": 12000
-    },
-    "summary": {
-      "total": 9,
-      "bySeverity": {
-        "critical": 1,
-        "high": 1,
-        "medium": 3,
-        "low": 2,
-        "info": 2
+{
+  "updatedAt": "2026-05-02T13:27:18.966Z",
+  "scans": [
+    {
+      "id": "aed3cb7e-13c9-4631-bee0-b77aa102aa28",
+      "product": "Sentinel Scan",
+      "version": "2.0.0",
+      "target": "http://localhost:3010/",
+      "finalUrl": "http://localhost:3010/",
+      "scannedAt": "2026-05-02T13:27:18.961Z",
+      "options": {
+        "includeSubpages": true,
+        "maxPages": 3,
+        "requestTimeoutMs": 12000
       },
-      "byCategory": {
-        "transport": 1,
-        "headers": 5,
-        "forms": 1,
-        "governance": 1,
-        "coverage": 1
-      }
-    },
-    "risk": {
-      "score": 35,
-      "band": "Moderate"
-    },
-    "technologies": [],
-    "transport": {
-      "supported": null,
-      "error": "TLS inspection not applicable because the final URL is not HTTPS."
-    },
-    "redirectPolicy": null,
-    "auxiliaryFiles": [
-      {
-        "path": "/.well-known/security.txt",
-        "status": 404,
-        "url": "http://localhost:3000/.well-known/security.txt"
+      "summary": {
+        "total": 5,
+        "bySeverity": {
+          "critical": 1,
+          "high": 1,
+          "medium": 1,
+          "info": 2
+        },
+        "byCategory": {
+          "transport": 1,
+          "headers": 1,
+          "forms": 1,
+          "governance": 1,
+          "coverage": 1
+        }
       },
-      {
-        "path": "/robots.txt",
-        "status": 404,
-        "url": "http://localhost:3000/robots.txt"
+      "risk": {
+        "score": 23,
+        "band": "Moderate"
       },
-      {
-        "path": "/sitemap.xml",
-        "status": 404,
-        "url": "http://localhost:3000/sitemap.xml"
-      }
-    ],
-    "coverage": {
-      "pages": [
+      "technologies": [],
+      "transport": {
+        "supported": null,
+        "error": "TLS inspection not applicable because the final URL is not HTTPS."
+      },
+      "redirectPolicy": null,
+      "auxiliaryFiles": [
         {
-          "url": "http://localhost:3000/",
-          "title": "Sentinel Scan",
-          "status": 200,
-          "contentType": "text/html; charset=utf-8",
-          "formsCount": 1,
-          "passwordForms": 0,
-          "inlineScriptCount": 0,
-          "externalScriptHosts": [],
-          "internalLinks": 0,
-          "loginSignal": false,
-          "findingsCount": 1
+          "path": "/.well-known/security.txt",
+          "status": 404,
+          "url": "http://localhost:3010/.well-known/security.txt"
+        },
+        {
+          "path": "/robots.txt",
+          "status": 404,
+          "url": "http://localhost:3010/robots.txt"
+        },
+        {
+          "path": "/sitemap.xml",
+          "status": 404,
+          "url": "http://localhost:3010/sitemap.xml"
         }
       ],
-      "pagesCrawled": 1,
-      "maxPages": 3,
-      "crawlEnabled": true
-    },
-    "inventory": {
-      "totalForms": 1,
-      "totalPasswordForms": 0,
-      "externalScriptHosts": [],
-      "loginPages": []
-    },
-    "findings": [
-      {
-        "id": "http-without-https-upgrade",
-        "title": "HTTP target did not upgrade to HTTPS",
-        "severity": "critical",
-        "category": "transport",
-        "description": "The target was submitted over HTTP and did not end on an HTTPS destination.",
-        "impact": "Traffic remains exposed to interception and tampering in transit.",
-        "remediation": "Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS.",
-        "evidence": "Submitted target: http://localhost:3000/ | Final URL: http://localhost:3000/",
-        "location": "http://localhost:3000/"
-      },
-      {
-        "id": "missing-content-security-policy",
-        "title": "Content Security Policy is missing",
-        "severity": "high",
-        "category": "headers",
-        "description": "content-security-policy was not present in the HTTP response.",
-        "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
-        "remediation": "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
-        "evidence": "Response URL: http://localhost:3000/",
-        "location": "http://localhost:3000/"
-      },
-      {
-        "id": "missing-x-frame-options",
-        "title": "Clickjacking protection header is missing",
-        "severity": "medium",
-        "category": "headers",
-        "description": "x-frame-options was not present in the HTTP response.",
-        "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
-        "remediation": "Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.",
-        "evidence": "Response URL: http://localhost:3000/",
-        "location": "http://localhost:3000/"
-      },
-      {
-        "id": "missing-x-content-type-options",
-        "title": "MIME sniffing protection is missing",
-        "severity": "medium",
-        "category": "headers",
-        "description": "x-content-type-options was not present in the HTTP response.",
-        "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
-        "remediation": "Set X-Content-Type-Options to nosniff.",
-        "evidence": "Response URL: http://localhost:3000/",
-        "location": "http://localhost:3000/"
-      },
-      {
-        "id": "csrf-token-not-observed-http://localhost:3000/",
-        "title": "No obvious CSRF token markers found in forms",
-        "severity": "medium",
-        "category": "forms",
-        "description": "The HTML did not include common token names often used to protect state-changing form submissions.",
-        "impact": "If the application relies on cookies for session state, cross-site request forgery risks may be higher.",
-        "remediation": "Review state-changing forms and ensure CSRF protections are consistently enforced server-side.",
-        "evidence": "Searched for token markers on http://localhost:3000/.",
-        "location": "http://localhost:3000/"
-      },
-      {
-        "id": "missing-referrer-policy",
-        "title": "Referrer policy is missing",
-        "severity": "low",
-        "category": "headers",
-        "description": "referrer-policy was not present in the HTTP response.",
-        "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
-        "remediation": "Set Referrer-Policy to a privacy-preserving value such as strict-origin-when-cross-origin.",
-        "evidence": "Response URL: http://localhost:3000/",
-        "location": "http://localhost:3000/"
-      },
-      {
-        "id": "missing-permissions-policy",
-        "title": "Permissions Policy is missing",
-        "severity": "low",
-        "category": "headers",
-        "description": "permissions-policy was not present in the HTTP response.",
-        "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
-        "remediation": "Add a Permissions-Policy header to explicitly disable browser features your application does not need.",
-        "evidence": "Response URL: http://localhost:3000/",
-        "location": "http://localhost:3000/"
-      },
-      {
-        "id": "security-txt-missing",
-        "title": "security.txt not found",
-        "severity": "info",
-        "category": "governance",
-        "description": "The standard /.well-known/security.txt contact file was not detected during this passive review.",
-        "impact": "External researchers and internal testers may have a less clear route for reporting vulnerabilities responsibly.",
-        "remediation": "Publish a security.txt file with a monitored disclosure contact, policy, and encryption metadata where appropriate.",
-        "evidence": "Checked /.well-known/security.txt -> status 404",
-        "location": "http://localhost:3000/.well-known/security.txt"
-      },
-      {
-        "id": "sitemap-not-found",
-        "title": "sitemap.xml not found",
-        "severity": "info",
-        "category": "coverage",
-        "description": "A sitemap was not detected, which can make broad passive discovery harder for both defenders and search engines.",
-        "impact": "The scan may have a smaller picture of the site's public structure when link discovery is limited.",
-        "remediation": "Consider publishing a current sitemap.xml to improve discoverability and easier defensive inventorying.",
-        "evidence": "Checked /sitemap.xml -> status 404",
-        "location": "http://localhost:3000/sitemap.xml"
-      }
-    ],
-    "report": {
-      "executiveSummary": "The scan covered 1 page(s) and identified 9 finding(s). The highest-priority work should focus on the transport, headers controls that reduce exposure across the whole application.",
-      "threatNarrative": "An attacker performing initial reconnaissance could use the observed weaknesses to fingerprint the stack, inspect login and content flows, and focus on the parts of the site with weaker transport, browser hardening, or dependency hygiene. The current scan stays passive and should be followed with manual validation where risk is highest.",
-      "attackSurface": "The crawl observed 1 page(s), 1 form(s), 0 password-entry surface(s), and 0 third-party script host(s).",
-      "coverageNotes": "Same-origin crawl was enabled with a limit of 3 page(s).",
-      "priorityActions": [
+      "sensitiveFiles": [
         {
-          "priority": 1,
-          "action": "Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS.",
-          "reason": "HTTP target did not upgrade to HTTPS (critical)"
+          "path": "/.env",
+          "status": 404,
+          "url": "http://localhost:3010/.env"
         },
         {
-          "priority": 2,
-          "action": "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
-          "reason": "Content Security Policy is missing (high)"
+          "path": "/.git/HEAD",
+          "status": 404,
+          "url": "http://localhost:3010/.git/HEAD"
         },
         {
-          "priority": 3,
-          "action": "Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.",
-          "reason": "Clickjacking protection header is missing (medium)"
+          "path": "/backup.zip",
+          "status": 404,
+          "url": "http://localhost:3010/backup.zip"
         },
         {
-          "priority": 4,
-          "action": "Set X-Content-Type-Options to nosniff.",
-          "reason": "MIME sniffing protection is missing (medium)"
-        },
-        {
-          "priority": 5,
-          "action": "Review state-changing forms and ensure CSRF protections are consistently enforced server-side.",
-          "reason": "No obvious CSRF token markers found in forms (medium)"
+          "path": "/config.php.bak",
+          "status": 404,
+          "url": "http://localhost:3010/config.php.bak"
         }
       ],
-      "quickWins": [
-        "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
-        "Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.",
-        "Set X-Content-Type-Options to nosniff."
-      ]
+      "coverage": {
+        "pages": [
+          {
+            "url": "http://localhost:3010/",
+            "title": "Sentinel Scan",
+            "status": 200,
+            "contentType": "text/html; charset=utf-8",
+            "formsCount": 1,
+            "passwordForms": 0,
+            "inlineScriptCount": 0,
+            "externalScriptHosts": [],
+            "internalLinks": 0,
+            "loginSignal": false,
+            "findingsCount": 1
+          }
+        ],
+        "pagesCrawled": 1,
+        "maxPages": 3,
+        "crawlEnabled": true
+      },
+      "inventory": {
+        "totalForms": 1,
+        "totalPasswordForms": 0,
+        "externalScriptHosts": [],
+        "loginPages": [],
+        "sensitiveFiles": []
+      },
+      "findings": [
+        {
+          "id": "http-without-https-upgrade",
+          "title": "HTTP target did not upgrade to HTTPS",
+          "severity": "critical",
+          "category": "transport",
+          "description": "The target was submitted over HTTP and did not end on an HTTPS destination.",
+          "impact": "Traffic remains exposed to interception and tampering in transit.",
+          "remediation": "Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS.",
+          "evidence": "Submitted target: http://localhost:3010/ | Final URL: http://localhost:3010/",
+          "location": "http://localhost:3010/"
+        },
+        {
+          "id": "missing-content-security-policy",
+          "title": "Content Security Policy is missing",
+          "severity": "high",
+          "category": "headers",
+          "description": "content-security-policy was not present in the HTTP response.",
+          "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
+          "remediation": "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
+          "evidence": "Response URL: http://localhost:3010/",
+          "location": "http://localhost:3010/"
+        },
+        {
+          "id": "csrf-token-not-observed-http://localhost:3010/",
+          "title": "No obvious CSRF token markers found in forms",
+          "severity": "medium",
+          "category": "forms",
+          "description": "The HTML did not include common token names often used to protect state-changing form submissions.",
+          "impact": "If the application relies on cookies for session state, cross-site request forgery risks may be higher.",
+          "remediation": "Review state-changing forms and ensure CSRF protections are consistently enforced server-side.",
+          "evidence": "Searched for token markers on http://localhost:3010/.",
+          "location": "http://localhost:3010/"
+        },
+        {
+          "id": "security-txt-missing",
+          "title": "security.txt not found",
+          "severity": "info",
+          "category": "governance",
+          "description": "The standard /.well-known/security.txt contact file was not detected during this passive review.",
+          "impact": "External researchers and internal testers may have a less clear route for reporting vulnerabilities responsibly.",
+          "remediation": "Publish a security.txt file with a monitored disclosure contact, policy, and encryption metadata where appropriate.",
+          "evidence": "Checked /.well-known/security.txt -> status 404",
+          "location": "http://localhost:3010/.well-known/security.txt"
+        },
+        {
+          "id": "sitemap-not-found",
+          "title": "sitemap.xml not found",
+          "severity": "info",
+          "category": "coverage",
+          "description": "A sitemap was not detected, which can make broad passive discovery harder for both defenders and search engines.",
+          "impact": "The scan may have a smaller picture of the site's public structure when link discovery is limited.",
+          "remediation": "Consider publishing a current sitemap.xml to improve discoverability and easier defensive inventorying.",
+          "evidence": "Checked /sitemap.xml -> status 404",
+          "location": "http://localhost:3010/sitemap.xml"
+        }
+      ],
+      "report": {
+        "executiveSummary": "The scan covered 1 page(s) and identified 5 finding(s). The highest-priority work should focus on the transport, headers, forms controls that reduce exposure across the whole application.",
+        "threatNarrative": "An attacker performing initial reconnaissance could use the observed weaknesses to fingerprint the stack, inspect login and content flows, and focus on the parts of the site with weaker transport, browser hardening, or dependency hygiene. The current scan stays passive and should be followed with manual validation where risk is highest.",
+        "attackSurface": "The crawl observed 1 page(s), 1 form(s), 0 password-entry surface(s), and 0 third-party script host(s).",
+        "coverageNotes": "Same-origin crawl was enabled with a limit of 3 page(s).",
+        "priorityActions": [
+          {
+            "priority": 1,
+            "action": "Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS.",
+            "reason": "HTTP target did not upgrade to HTTPS (critical)"
+          },
+          {
+            "priority": 2,
+            "action": "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
+            "reason": "Content Security Policy is missing (high)"
+          },
+          {
+            "priority": 3,
+            "action": "Review state-changing forms and ensure CSRF protections are consistently enforced server-side.",
+            "reason": "No obvious CSRF token markers found in forms (medium)"
+          },
+          {
+            "priority": 4,
+            "action": "Publish a security.txt file with a monitored disclosure contact, policy, and encryption metadata where appropriate.",
+            "reason": "security.txt not found (info)"
+          },
+          {
+            "priority": 5,
+            "action": "Consider publishing a current sitemap.xml to improve discoverability and easier defensive inventorying.",
+            "reason": "sitemap.xml not found (info)"
+          }
+        ],
+        "quickWins": [
+          "Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS.",
+          "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
+          "Review state-changing forms and ensure CSRF protections are consistently enforced server-side."
+        ]
+      },
+      "markdown": "# Sentinel Scan Report\n\n- Target: http://localhost:3010/\n- Final URL: http://localhost:3010/\n- Scanned at: 2026-05-02T13:27:18.961Z\n- Risk score: 23/100 (Moderate)\n- Findings: 5\n- Pages crawled: 1\n\n## Executive Summary\n\nThe scan covered 1 page(s) and identified 5 finding(s). The highest-priority work should focus on the transport, headers, forms controls that reduce exposure across the whole application.\n\n## Threat Narrative\n\nAn attacker performing initial reconnaissance could use the observed weaknesses to fingerprint the stack, inspect login and content flows, and focus on the parts of the site with weaker transport, browser hardening, or dependency hygiene. The current scan stays passive and should be followed with manual validation where risk is highest.\n\n## Attack Surface\n\nThe crawl observed 1 page(s), 1 form(s), 0 password-entry surface(s), and 0 third-party script host(s).\n\n## Priority Actions\n\n1. Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS. (HTTP target did not upgrade to HTTPS (critical))\n2. Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins. (Content Security Policy is missing (high))\n3. Review state-changing forms and ensure CSRF protections are consistently enforced server-side. (No obvious CSRF token markers found in forms (medium))\n4. Publish a security.txt file with a monitored disclosure contact, policy, and encryption metadata where appropriate. (security.txt not found (info))\n5. Consider publishing a current sitemap.xml to improve discoverability and easier defensive inventorying. (sitemap.xml not found (info))\n\n## Coverage\n\n- Same-origin crawl was enabled with a limit of 3 page(s).\n- Login-like pages observed: 0\n- External script hosts: None detected\n\n## Pages\n\n- http://localhost:3010/ | status 200 | forms 1 | findings 1\n\n## Findings\n\n### HTTP target did not upgrade to HTTPS\n- Severity: critical\n- Category: transport\n- Location: http://localhost:3010/\n- Description: The target was submitted over HTTP and did not end on an HTTPS destination.\n- Impact: Traffic remains exposed to interception and tampering in transit.\n- Remediation: Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS.\n- Evidence: Submitted target: http://localhost:3010/ | Final URL: http://localhost:3010/\n\n### Content Security Policy is missing\n- Severity: high\n- Category: headers\n- Location: http://localhost:3010/\n- Description: content-security-policy was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.\n- Evidence: Response URL: http://localhost:3010/\n\n### No obvious CSRF token markers found in forms\n- Severity: medium\n- Category: forms\n- Location: http://localhost:3010/\n- Description: The HTML did not include common token names often used to protect state-changing form submissions.\n- Impact: If the application relies on cookies for session state, cross-site request forgery risks may be higher.\n- Remediation: Review state-changing forms and ensure CSRF protections are consistently enforced server-side.\n- Evidence: Searched for token markers on http://localhost:3010/.\n\n### security.txt not found\n- Severity: info\n- Category: governance\n- Location: http://localhost:3010/.well-known/security.txt\n- Description: The standard /.well-known/security.txt contact file was not detected during this passive review.\n- Impact: External researchers and internal testers may have a less clear route for reporting vulnerabilities responsibly.\n- Remediation: Publish a security.txt file with a monitored disclosure contact, policy, and encryption metadata where appropriate.\n- Evidence: Checked /.well-known/security.txt -> status 404\n\n### sitemap.xml not found\n- Severity: info\n- Category: coverage\n- Location: http://localhost:3010/sitemap.xml\n- Description: A sitemap was not detected, which can make broad passive discovery harder for both defenders and search engines.\n- Impact: The scan may have a smaller picture of the site's public structure when link discovery is limited.\n- Remediation: Consider publishing a current sitemap.xml to improve discoverability and easier defensive inventorying.\n- Evidence: Checked /sitemap.xml -> status 404\n\n## Scope Notes\n\nThis platform performs passive, low-impact checks intended for authorized security reviews. It does not exploit vulnerabilities, brute force content, or perform intrusive testing.",
+      "scope": {
+        "mode": "passive-authorized-review",
+        "limitations": [
+          "No active exploitation or credentialed testing is performed.",
+          "Results are heuristic and should be validated manually before remediation or disclosure decisions."
+        ]
+      },
+      "durationMs": 82,
+      "fingerprint": "423083142f340f94e6b542cb2bbbaaeb2a5c691a",
+      "storedAt": "2026-05-02T13:27:18.966Z"
     },
-    "markdown": "# Sentinel Scan Report\n\n- Target: http://localhost:3000/\n- Final URL: http://localhost:3000/\n- Scanned at: 2026-05-02T11:13:18.077Z\n- Risk score: 35/100 (Moderate)\n- Findings: 9\n- Pages crawled: 1\n\n## Executive Summary\n\nThe scan covered 1 page(s) and identified 9 finding(s). The highest-priority work should focus on the transport, headers controls that reduce exposure across the whole application.\n\n## Threat Narrative\n\nAn attacker performing initial reconnaissance could use the observed weaknesses to fingerprint the stack, inspect login and content flows, and focus on the parts of the site with weaker transport, browser hardening, or dependency hygiene. The current scan stays passive and should be followed with manual validation where risk is highest.\n\n## Attack Surface\n\nThe crawl observed 1 page(s), 1 form(s), 0 password-entry surface(s), and 0 third-party script host(s).\n\n## Priority Actions\n\n1. Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS. (HTTP target did not upgrade to HTTPS (critical))\n2. Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins. (Content Security Policy is missing (high))\n3. Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement. (Clickjacking protection header is missing (medium))\n4. Set X-Content-Type-Options to nosniff. (MIME sniffing protection is missing (medium))\n5. Review state-changing forms and ensure CSRF protections are consistently enforced server-side. (No obvious CSRF token markers found in forms (medium))\n\n## Coverage\n\n- Same-origin crawl was enabled with a limit of 3 page(s).\n- Login-like pages observed: 0\n- External script hosts: None detected\n\n## Pages\n\n- http://localhost:3000/ | status 200 | forms 1 | findings 1\n\n## Findings\n\n### HTTP target did not upgrade to HTTPS\n- Severity: critical\n- Category: transport\n- Location: http://localhost:3000/\n- Description: The target was submitted over HTTP and did not end on an HTTPS destination.\n- Impact: Traffic remains exposed to interception and tampering in transit.\n- Remediation: Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS.\n- Evidence: Submitted target: http://localhost:3000/ | Final URL: http://localhost:3000/\n\n### Content Security Policy is missing\n- Severity: high\n- Category: headers\n- Location: http://localhost:3000/\n- Description: content-security-policy was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.\n- Evidence: Response URL: http://localhost:3000/\n\n### Clickjacking protection header is missing\n- Severity: medium\n- Category: headers\n- Location: http://localhost:3000/\n- Description: x-frame-options was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.\n- Evidence: Response URL: http://localhost:3000/\n\n### MIME sniffing protection is missing\n- Severity: medium\n- Category: headers\n- Location: http://localhost:3000/\n- Description: x-content-type-options was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Set X-Content-Type-Options to nosniff.\n- Evidence: Response URL: http://localhost:3000/\n\n### No obvious CSRF token markers found in forms\n- Severity: medium\n- Category: forms\n- Location: http://localhost:3000/\n- Description: The HTML did not include common token names often used to protect state-changing form submissions.\n- Impact: If the application relies on cookies for session state, cross-site request forgery risks may be higher.\n- Remediation: Review state-changing forms and ensure CSRF protections are consistently enforced server-side.\n- Evidence: Searched for token markers on http://localhost:3000/.\n\n### Referrer policy is missing\n- Severity: low\n- Category: headers\n- Location: http://localhost:3000/\n- Description: referrer-policy was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Set Referrer-Policy to a privacy-preserving value such as strict-origin-when-cross-origin.\n- Evidence: Response URL: http://localhost:3000/\n\n### Permissions Policy is missing\n- Severity: low\n- Category: headers\n- Location: http://localhost:3000/\n- Description: permissions-policy was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Add a Permissions-Policy header to explicitly disable browser features your application does not need.\n- Evidence: Response URL: http://localhost:3000/\n\n### security.txt not found\n- Severity: info\n- Category: governance\n- Location: http://localhost:3000/.well-known/security.txt\n- Description: The standard /.well-known/security.txt contact file was not detected during this passive review.\n- Impact: External researchers and internal testers may have a less clear route for reporting vulnerabilities responsibly.\n- Remediation: Publish a security.txt file with a monitored disclosure contact, policy, and encryption metadata where appropriate.\n- Evidence: Checked /.well-known/security.txt -> status 404\n\n### sitemap.xml not found\n- Severity: info\n- Category: coverage\n- Location: http://localhost:3000/sitemap.xml\n- Description: A sitemap was not detected, which can make broad passive discovery harder for both defenders and search engines.\n- Impact: The scan may have a smaller picture of the site's public structure when link discovery is limited.\n- Remediation: Consider publishing a current sitemap.xml to improve discoverability and easier defensive inventorying.\n- Evidence: Checked /sitemap.xml -> status 404\n\n## Scope Notes\n\nThis platform performs passive, low-impact checks intended for authorized security reviews. It does not exploit vulnerabilities, brute force content, or perform intrusive testing.",
-    "scope": {
-      "mode": "passive-authorized-review",
-      "limitations": [
-        "No active exploitation or credentialed testing is performed.",
-        "Results are heuristic and should be validated manually before remediation or disclosure decisions."
-      ]
+    {
+      "id": "81eff506-5676-4110-a08e-34f770124cf8",
+      "product": "Sentinel Scan",
+      "version": "2.0.0",
+      "target": "http://localhost:3000/",
+      "finalUrl": "http://localhost:3000/",
+      "scannedAt": "2026-05-02T13:26:40.061Z",
+      "options": {
+        "includeSubpages": true,
+        "maxPages": 3,
+        "requestTimeoutMs": 12000
+      },
+      "summary": {
+        "total": 9,
+        "bySeverity": {
+          "critical": 1,
+          "high": 1,
+          "medium": 3,
+          "low": 2,
+          "info": 2
+        },
+        "byCategory": {
+          "transport": 1,
+          "headers": 5,
+          "forms": 1,
+          "governance": 1,
+          "coverage": 1
+        }
+      },
+      "risk": {
+        "score": 35,
+        "band": "Moderate"
+      },
+      "technologies": [],
+      "transport": {
+        "supported": null,
+        "error": "TLS inspection not applicable because the final URL is not HTTPS."
+      },
+      "redirectPolicy": null,
+      "auxiliaryFiles": [
+        {
+          "path": "/.well-known/security.txt",
+          "status": 404,
+          "url": "http://localhost:3000/.well-known/security.txt"
+        },
+        {
+          "path": "/robots.txt",
+          "status": 404,
+          "url": "http://localhost:3000/robots.txt"
+        },
+        {
+          "path": "/sitemap.xml",
+          "status": 404,
+          "url": "http://localhost:3000/sitemap.xml"
+        }
+      ],
+      "coverage": {
+        "pages": [
+          {
+            "url": "http://localhost:3000/",
+            "title": "Sentinel Scan",
+            "status": 200,
+            "contentType": "text/html; charset=utf-8",
+            "formsCount": 1,
+            "passwordForms": 0,
+            "inlineScriptCount": 0,
+            "externalScriptHosts": [],
+            "internalLinks": 0,
+            "loginSignal": false,
+            "findingsCount": 1
+          }
+        ],
+        "pagesCrawled": 1,
+        "maxPages": 3,
+        "crawlEnabled": true
+      },
+      "inventory": {
+        "totalForms": 1,
+        "totalPasswordForms": 0,
+        "externalScriptHosts": [],
+        "loginPages": []
+      },
+      "findings": [
+        {
+          "id": "http-without-https-upgrade",
+          "title": "HTTP target did not upgrade to HTTPS",
+          "severity": "critical",
+          "category": "transport",
+          "description": "The target was submitted over HTTP and did not end on an HTTPS destination.",
+          "impact": "Traffic remains exposed to interception and tampering in transit.",
+          "remediation": "Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS.",
+          "evidence": "Submitted target: http://localhost:3000/ | Final URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "missing-content-security-policy",
+          "title": "Content Security Policy is missing",
+          "severity": "high",
+          "category": "headers",
+          "description": "content-security-policy was not present in the HTTP response.",
+          "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
+          "remediation": "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
+          "evidence": "Response URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "missing-x-frame-options",
+          "title": "Clickjacking protection header is missing",
+          "severity": "medium",
+          "category": "headers",
+          "description": "x-frame-options was not present in the HTTP response.",
+          "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
+          "remediation": "Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.",
+          "evidence": "Response URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "missing-x-content-type-options",
+          "title": "MIME sniffing protection is missing",
+          "severity": "medium",
+          "category": "headers",
+          "description": "x-content-type-options was not present in the HTTP response.",
+          "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
+          "remediation": "Set X-Content-Type-Options to nosniff.",
+          "evidence": "Response URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "csrf-token-not-observed-http://localhost:3000/",
+          "title": "No obvious CSRF token markers found in forms",
+          "severity": "medium",
+          "category": "forms",
+          "description": "The HTML did not include common token names often used to protect state-changing form submissions.",
+          "impact": "If the application relies on cookies for session state, cross-site request forgery risks may be higher.",
+          "remediation": "Review state-changing forms and ensure CSRF protections are consistently enforced server-side.",
+          "evidence": "Searched for token markers on http://localhost:3000/.",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "missing-referrer-policy",
+          "title": "Referrer policy is missing",
+          "severity": "low",
+          "category": "headers",
+          "description": "referrer-policy was not present in the HTTP response.",
+          "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
+          "remediation": "Set Referrer-Policy to a privacy-preserving value such as strict-origin-when-cross-origin.",
+          "evidence": "Response URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "missing-permissions-policy",
+          "title": "Permissions Policy is missing",
+          "severity": "low",
+          "category": "headers",
+          "description": "permissions-policy was not present in the HTTP response.",
+          "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
+          "remediation": "Add a Permissions-Policy header to explicitly disable browser features your application does not need.",
+          "evidence": "Response URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "security-txt-missing",
+          "title": "security.txt not found",
+          "severity": "info",
+          "category": "governance",
+          "description": "The standard /.well-known/security.txt contact file was not detected during this passive review.",
+          "impact": "External researchers and internal testers may have a less clear route for reporting vulnerabilities responsibly.",
+          "remediation": "Publish a security.txt file with a monitored disclosure contact, policy, and encryption metadata where appropriate.",
+          "evidence": "Checked /.well-known/security.txt -> status 404",
+          "location": "http://localhost:3000/.well-known/security.txt"
+        },
+        {
+          "id": "sitemap-not-found",
+          "title": "sitemap.xml not found",
+          "severity": "info",
+          "category": "coverage",
+          "description": "A sitemap was not detected, which can make broad passive discovery harder for both defenders and search engines.",
+          "impact": "The scan may have a smaller picture of the site's public structure when link discovery is limited.",
+          "remediation": "Consider publishing a current sitemap.xml to improve discoverability and easier defensive inventorying.",
+          "evidence": "Checked /sitemap.xml -> status 404",
+          "location": "http://localhost:3000/sitemap.xml"
+        }
+      ],
+      "report": {
+        "executiveSummary": "The scan covered 1 page(s) and identified 9 finding(s). The highest-priority work should focus on the transport, headers controls that reduce exposure across the whole application.",
+        "threatNarrative": "An attacker performing initial reconnaissance could use the observed weaknesses to fingerprint the stack, inspect login and content flows, and focus on the parts of the site with weaker transport, browser hardening, or dependency hygiene. The current scan stays passive and should be followed with manual validation where risk is highest.",
+        "attackSurface": "The crawl observed 1 page(s), 1 form(s), 0 password-entry surface(s), and 0 third-party script host(s).",
+        "coverageNotes": "Same-origin crawl was enabled with a limit of 3 page(s).",
+        "priorityActions": [
+          {
+            "priority": 1,
+            "action": "Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS.",
+            "reason": "HTTP target did not upgrade to HTTPS (critical)"
+          },
+          {
+            "priority": 2,
+            "action": "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
+            "reason": "Content Security Policy is missing (high)"
+          },
+          {
+            "priority": 3,
+            "action": "Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.",
+            "reason": "Clickjacking protection header is missing (medium)"
+          },
+          {
+            "priority": 4,
+            "action": "Set X-Content-Type-Options to nosniff.",
+            "reason": "MIME sniffing protection is missing (medium)"
+          },
+          {
+            "priority": 5,
+            "action": "Review state-changing forms and ensure CSRF protections are consistently enforced server-side.",
+            "reason": "No obvious CSRF token markers found in forms (medium)"
+          }
+        ],
+        "quickWins": [
+          "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
+          "Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.",
+          "Set X-Content-Type-Options to nosniff."
+        ]
+      },
+      "markdown": "# Sentinel Scan Report\n\n- Target: http://localhost:3000/\n- Final URL: http://localhost:3000/\n- Scanned at: 2026-05-02T13:26:40.061Z\n- Risk score: 35/100 (Moderate)\n- Findings: 9\n- Pages crawled: 1\n\n## Executive Summary\n\nThe scan covered 1 page(s) and identified 9 finding(s). The highest-priority work should focus on the transport, headers controls that reduce exposure across the whole application.\n\n## Threat Narrative\n\nAn attacker performing initial reconnaissance could use the observed weaknesses to fingerprint the stack, inspect login and content flows, and focus on the parts of the site with weaker transport, browser hardening, or dependency hygiene. The current scan stays passive and should be followed with manual validation where risk is highest.\n\n## Attack Surface\n\nThe crawl observed 1 page(s), 1 form(s), 0 password-entry surface(s), and 0 third-party script host(s).\n\n## Priority Actions\n\n1. Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS. (HTTP target did not upgrade to HTTPS (critical))\n2. Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins. (Content Security Policy is missing (high))\n3. Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement. (Clickjacking protection header is missing (medium))\n4. Set X-Content-Type-Options to nosniff. (MIME sniffing protection is missing (medium))\n5. Review state-changing forms and ensure CSRF protections are consistently enforced server-side. (No obvious CSRF token markers found in forms (medium))\n\n## Coverage\n\n- Same-origin crawl was enabled with a limit of 3 page(s).\n- Login-like pages observed: 0\n- External script hosts: None detected\n\n## Pages\n\n- http://localhost:3000/ | status 200 | forms 1 | findings 1\n\n## Findings\n\n### HTTP target did not upgrade to HTTPS\n- Severity: critical\n- Category: transport\n- Location: http://localhost:3000/\n- Description: The target was submitted over HTTP and did not end on an HTTPS destination.\n- Impact: Traffic remains exposed to interception and tampering in transit.\n- Remediation: Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS.\n- Evidence: Submitted target: http://localhost:3000/ | Final URL: http://localhost:3000/\n\n### Content Security Policy is missing\n- Severity: high\n- Category: headers\n- Location: http://localhost:3000/\n- Description: content-security-policy was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.\n- Evidence: Response URL: http://localhost:3000/\n\n### Clickjacking protection header is missing\n- Severity: medium\n- Category: headers\n- Location: http://localhost:3000/\n- Description: x-frame-options was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.\n- Evidence: Response URL: http://localhost:3000/\n\n### MIME sniffing protection is missing\n- Severity: medium\n- Category: headers\n- Location: http://localhost:3000/\n- Description: x-content-type-options was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Set X-Content-Type-Options to nosniff.\n- Evidence: Response URL: http://localhost:3000/\n\n### No obvious CSRF token markers found in forms\n- Severity: medium\n- Category: forms\n- Location: http://localhost:3000/\n- Description: The HTML did not include common token names often used to protect state-changing form submissions.\n- Impact: If the application relies on cookies for session state, cross-site request forgery risks may be higher.\n- Remediation: Review state-changing forms and ensure CSRF protections are consistently enforced server-side.\n- Evidence: Searched for token markers on http://localhost:3000/.\n\n### Referrer policy is missing\n- Severity: low\n- Category: headers\n- Location: http://localhost:3000/\n- Description: referrer-policy was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Set Referrer-Policy to a privacy-preserving value such as strict-origin-when-cross-origin.\n- Evidence: Response URL: http://localhost:3000/\n\n### Permissions Policy is missing\n- Severity: low\n- Category: headers\n- Location: http://localhost:3000/\n- Description: permissions-policy was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Add a Permissions-Policy header to explicitly disable browser features your application does not need.\n- Evidence: Response URL: http://localhost:3000/\n\n### security.txt not found\n- Severity: info\n- Category: governance\n- Location: http://localhost:3000/.well-known/security.txt\n- Description: The standard /.well-known/security.txt contact file was not detected during this passive review.\n- Impact: External researchers and internal testers may have a less clear route for reporting vulnerabilities responsibly.\n- Remediation: Publish a security.txt file with a monitored disclosure contact, policy, and encryption metadata where appropriate.\n- Evidence: Checked /.well-known/security.txt -> status 404\n\n### sitemap.xml not found\n- Severity: info\n- Category: coverage\n- Location: http://localhost:3000/sitemap.xml\n- Description: A sitemap was not detected, which can make broad passive discovery harder for both defenders and search engines.\n- Impact: The scan may have a smaller picture of the site's public structure when link discovery is limited.\n- Remediation: Consider publishing a current sitemap.xml to improve discoverability and easier defensive inventorying.\n- Evidence: Checked /sitemap.xml -> status 404\n\n## Scope Notes\n\nThis platform performs passive, low-impact checks intended for authorized security reviews. It does not exploit vulnerabilities, brute force content, or perform intrusive testing.",
+      "scope": {
+        "mode": "passive-authorized-review",
+        "limitations": [
+          "No active exploitation or credentialed testing is performed.",
+          "Results are heuristic and should be validated manually before remediation or disclosure decisions."
+        ]
+      }
+    },
+    {
+      "id": "287840bd-019a-474f-85f9-7717b6f4efe3",
+      "product": "Sentinel Scan",
+      "version": "2.0.0",
+      "target": "http://localhost:3000/",
+      "finalUrl": "http://localhost:3000/",
+      "scannedAt": "2026-05-02T13:26:39.788Z",
+      "options": {
+        "includeSubpages": true,
+        "maxPages": 3,
+        "requestTimeoutMs": 12000
+      },
+      "summary": {
+        "total": 9,
+        "bySeverity": {
+          "critical": 1,
+          "high": 1,
+          "medium": 3,
+          "low": 2,
+          "info": 2
+        },
+        "byCategory": {
+          "transport": 1,
+          "headers": 5,
+          "forms": 1,
+          "governance": 1,
+          "coverage": 1
+        }
+      },
+      "risk": {
+        "score": 35,
+        "band": "Moderate"
+      },
+      "technologies": [],
+      "transport": {
+        "supported": null,
+        "error": "TLS inspection not applicable because the final URL is not HTTPS."
+      },
+      "redirectPolicy": null,
+      "auxiliaryFiles": [
+        {
+          "path": "/.well-known/security.txt",
+          "status": 404,
+          "url": "http://localhost:3000/.well-known/security.txt"
+        },
+        {
+          "path": "/robots.txt",
+          "status": 404,
+          "url": "http://localhost:3000/robots.txt"
+        },
+        {
+          "path": "/sitemap.xml",
+          "status": 404,
+          "url": "http://localhost:3000/sitemap.xml"
+        }
+      ],
+      "coverage": {
+        "pages": [
+          {
+            "url": "http://localhost:3000/",
+            "title": "Sentinel Scan",
+            "status": 200,
+            "contentType": "text/html; charset=utf-8",
+            "formsCount": 1,
+            "passwordForms": 0,
+            "inlineScriptCount": 0,
+            "externalScriptHosts": [],
+            "internalLinks": 0,
+            "loginSignal": false,
+            "findingsCount": 1
+          }
+        ],
+        "pagesCrawled": 1,
+        "maxPages": 3,
+        "crawlEnabled": true
+      },
+      "inventory": {
+        "totalForms": 1,
+        "totalPasswordForms": 0,
+        "externalScriptHosts": [],
+        "loginPages": []
+      },
+      "findings": [
+        {
+          "id": "http-without-https-upgrade",
+          "title": "HTTP target did not upgrade to HTTPS",
+          "severity": "critical",
+          "category": "transport",
+          "description": "The target was submitted over HTTP and did not end on an HTTPS destination.",
+          "impact": "Traffic remains exposed to interception and tampering in transit.",
+          "remediation": "Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS.",
+          "evidence": "Submitted target: http://localhost:3000/ | Final URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "missing-content-security-policy",
+          "title": "Content Security Policy is missing",
+          "severity": "high",
+          "category": "headers",
+          "description": "content-security-policy was not present in the HTTP response.",
+          "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
+          "remediation": "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
+          "evidence": "Response URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "missing-x-frame-options",
+          "title": "Clickjacking protection header is missing",
+          "severity": "medium",
+          "category": "headers",
+          "description": "x-frame-options was not present in the HTTP response.",
+          "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
+          "remediation": "Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.",
+          "evidence": "Response URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "missing-x-content-type-options",
+          "title": "MIME sniffing protection is missing",
+          "severity": "medium",
+          "category": "headers",
+          "description": "x-content-type-options was not present in the HTTP response.",
+          "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
+          "remediation": "Set X-Content-Type-Options to nosniff.",
+          "evidence": "Response URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "csrf-token-not-observed-http://localhost:3000/",
+          "title": "No obvious CSRF token markers found in forms",
+          "severity": "medium",
+          "category": "forms",
+          "description": "The HTML did not include common token names often used to protect state-changing form submissions.",
+          "impact": "If the application relies on cookies for session state, cross-site request forgery risks may be higher.",
+          "remediation": "Review state-changing forms and ensure CSRF protections are consistently enforced server-side.",
+          "evidence": "Searched for token markers on http://localhost:3000/.",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "missing-referrer-policy",
+          "title": "Referrer policy is missing",
+          "severity": "low",
+          "category": "headers",
+          "description": "referrer-policy was not present in the HTTP response.",
+          "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
+          "remediation": "Set Referrer-Policy to a privacy-preserving value such as strict-origin-when-cross-origin.",
+          "evidence": "Response URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "missing-permissions-policy",
+          "title": "Permissions Policy is missing",
+          "severity": "low",
+          "category": "headers",
+          "description": "permissions-policy was not present in the HTTP response.",
+          "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
+          "remediation": "Add a Permissions-Policy header to explicitly disable browser features your application does not need.",
+          "evidence": "Response URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "security-txt-missing",
+          "title": "security.txt not found",
+          "severity": "info",
+          "category": "governance",
+          "description": "The standard /.well-known/security.txt contact file was not detected during this passive review.",
+          "impact": "External researchers and internal testers may have a less clear route for reporting vulnerabilities responsibly.",
+          "remediation": "Publish a security.txt file with a monitored disclosure contact, policy, and encryption metadata where appropriate.",
+          "evidence": "Checked /.well-known/security.txt -> status 404",
+          "location": "http://localhost:3000/.well-known/security.txt"
+        },
+        {
+          "id": "sitemap-not-found",
+          "title": "sitemap.xml not found",
+          "severity": "info",
+          "category": "coverage",
+          "description": "A sitemap was not detected, which can make broad passive discovery harder for both defenders and search engines.",
+          "impact": "The scan may have a smaller picture of the site's public structure when link discovery is limited.",
+          "remediation": "Consider publishing a current sitemap.xml to improve discoverability and easier defensive inventorying.",
+          "evidence": "Checked /sitemap.xml -> status 404",
+          "location": "http://localhost:3000/sitemap.xml"
+        }
+      ],
+      "report": {
+        "executiveSummary": "The scan covered 1 page(s) and identified 9 finding(s). The highest-priority work should focus on the transport, headers controls that reduce exposure across the whole application.",
+        "threatNarrative": "An attacker performing initial reconnaissance could use the observed weaknesses to fingerprint the stack, inspect login and content flows, and focus on the parts of the site with weaker transport, browser hardening, or dependency hygiene. The current scan stays passive and should be followed with manual validation where risk is highest.",
+        "attackSurface": "The crawl observed 1 page(s), 1 form(s), 0 password-entry surface(s), and 0 third-party script host(s).",
+        "coverageNotes": "Same-origin crawl was enabled with a limit of 3 page(s).",
+        "priorityActions": [
+          {
+            "priority": 1,
+            "action": "Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS.",
+            "reason": "HTTP target did not upgrade to HTTPS (critical)"
+          },
+          {
+            "priority": 2,
+            "action": "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
+            "reason": "Content Security Policy is missing (high)"
+          },
+          {
+            "priority": 3,
+            "action": "Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.",
+            "reason": "Clickjacking protection header is missing (medium)"
+          },
+          {
+            "priority": 4,
+            "action": "Set X-Content-Type-Options to nosniff.",
+            "reason": "MIME sniffing protection is missing (medium)"
+          },
+          {
+            "priority": 5,
+            "action": "Review state-changing forms and ensure CSRF protections are consistently enforced server-side.",
+            "reason": "No obvious CSRF token markers found in forms (medium)"
+          }
+        ],
+        "quickWins": [
+          "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
+          "Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.",
+          "Set X-Content-Type-Options to nosniff."
+        ]
+      },
+      "markdown": "# Sentinel Scan Report\n\n- Target: http://localhost:3000/\n- Final URL: http://localhost:3000/\n- Scanned at: 2026-05-02T13:26:39.788Z\n- Risk score: 35/100 (Moderate)\n- Findings: 9\n- Pages crawled: 1\n\n## Executive Summary\n\nThe scan covered 1 page(s) and identified 9 finding(s). The highest-priority work should focus on the transport, headers controls that reduce exposure across the whole application.\n\n## Threat Narrative\n\nAn attacker performing initial reconnaissance could use the observed weaknesses to fingerprint the stack, inspect login and content flows, and focus on the parts of the site with weaker transport, browser hardening, or dependency hygiene. The current scan stays passive and should be followed with manual validation where risk is highest.\n\n## Attack Surface\n\nThe crawl observed 1 page(s), 1 form(s), 0 password-entry surface(s), and 0 third-party script host(s).\n\n## Priority Actions\n\n1. Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS. (HTTP target did not upgrade to HTTPS (critical))\n2. Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins. (Content Security Policy is missing (high))\n3. Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement. (Clickjacking protection header is missing (medium))\n4. Set X-Content-Type-Options to nosniff. (MIME sniffing protection is missing (medium))\n5. Review state-changing forms and ensure CSRF protections are consistently enforced server-side. (No obvious CSRF token markers found in forms (medium))\n\n## Coverage\n\n- Same-origin crawl was enabled with a limit of 3 page(s).\n- Login-like pages observed: 0\n- External script hosts: None detected\n\n## Pages\n\n- http://localhost:3000/ | status 200 | forms 1 | findings 1\n\n## Findings\n\n### HTTP target did not upgrade to HTTPS\n- Severity: critical\n- Category: transport\n- Location: http://localhost:3000/\n- Description: The target was submitted over HTTP and did not end on an HTTPS destination.\n- Impact: Traffic remains exposed to interception and tampering in transit.\n- Remediation: Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS.\n- Evidence: Submitted target: http://localhost:3000/ | Final URL: http://localhost:3000/\n\n### Content Security Policy is missing\n- Severity: high\n- Category: headers\n- Location: http://localhost:3000/\n- Description: content-security-policy was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.\n- Evidence: Response URL: http://localhost:3000/\n\n### Clickjacking protection header is missing\n- Severity: medium\n- Category: headers\n- Location: http://localhost:3000/\n- Description: x-frame-options was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.\n- Evidence: Response URL: http://localhost:3000/\n\n### MIME sniffing protection is missing\n- Severity: medium\n- Category: headers\n- Location: http://localhost:3000/\n- Description: x-content-type-options was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Set X-Content-Type-Options to nosniff.\n- Evidence: Response URL: http://localhost:3000/\n\n### No obvious CSRF token markers found in forms\n- Severity: medium\n- Category: forms\n- Location: http://localhost:3000/\n- Description: The HTML did not include common token names often used to protect state-changing form submissions.\n- Impact: If the application relies on cookies for session state, cross-site request forgery risks may be higher.\n- Remediation: Review state-changing forms and ensure CSRF protections are consistently enforced server-side.\n- Evidence: Searched for token markers on http://localhost:3000/.\n\n### Referrer policy is missing\n- Severity: low\n- Category: headers\n- Location: http://localhost:3000/\n- Description: referrer-policy was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Set Referrer-Policy to a privacy-preserving value such as strict-origin-when-cross-origin.\n- Evidence: Response URL: http://localhost:3000/\n\n### Permissions Policy is missing\n- Severity: low\n- Category: headers\n- Location: http://localhost:3000/\n- Description: permissions-policy was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Add a Permissions-Policy header to explicitly disable browser features your application does not need.\n- Evidence: Response URL: http://localhost:3000/\n\n### security.txt not found\n- Severity: info\n- Category: governance\n- Location: http://localhost:3000/.well-known/security.txt\n- Description: The standard /.well-known/security.txt contact file was not detected during this passive review.\n- Impact: External researchers and internal testers may have a less clear route for reporting vulnerabilities responsibly.\n- Remediation: Publish a security.txt file with a monitored disclosure contact, policy, and encryption metadata where appropriate.\n- Evidence: Checked /.well-known/security.txt -> status 404\n\n### sitemap.xml not found\n- Severity: info\n- Category: coverage\n- Location: http://localhost:3000/sitemap.xml\n- Description: A sitemap was not detected, which can make broad passive discovery harder for both defenders and search engines.\n- Impact: The scan may have a smaller picture of the site's public structure when link discovery is limited.\n- Remediation: Consider publishing a current sitemap.xml to improve discoverability and easier defensive inventorying.\n- Evidence: Checked /sitemap.xml -> status 404\n\n## Scope Notes\n\nThis platform performs passive, low-impact checks intended for authorized security reviews. It does not exploit vulnerabilities, brute force content, or perform intrusive testing.",
+      "scope": {
+        "mode": "passive-authorized-review",
+        "limitations": [
+          "No active exploitation or credentialed testing is performed.",
+          "Results are heuristic and should be validated manually before remediation or disclosure decisions."
+        ]
+      }
+    },
+    {
+      "id": "e2ccf1ad-6233-4b1a-9213-a8685ec54a55",
+      "product": "Sentinel Scan",
+      "version": "2.0.0",
+      "target": "http://localhost:3000/",
+      "finalUrl": "http://localhost:3000/",
+      "scannedAt": "2026-05-02T11:13:18.077Z",
+      "options": {
+        "includeSubpages": true,
+        "maxPages": 3,
+        "requestTimeoutMs": 12000
+      },
+      "summary": {
+        "total": 9,
+        "bySeverity": {
+          "critical": 1,
+          "high": 1,
+          "medium": 3,
+          "low": 2,
+          "info": 2
+        },
+        "byCategory": {
+          "transport": 1,
+          "headers": 5,
+          "forms": 1,
+          "governance": 1,
+          "coverage": 1
+        }
+      },
+      "risk": {
+        "score": 35,
+        "band": "Moderate"
+      },
+      "technologies": [],
+      "transport": {
+        "supported": null,
+        "error": "TLS inspection not applicable because the final URL is not HTTPS."
+      },
+      "redirectPolicy": null,
+      "auxiliaryFiles": [
+        {
+          "path": "/.well-known/security.txt",
+          "status": 404,
+          "url": "http://localhost:3000/.well-known/security.txt"
+        },
+        {
+          "path": "/robots.txt",
+          "status": 404,
+          "url": "http://localhost:3000/robots.txt"
+        },
+        {
+          "path": "/sitemap.xml",
+          "status": 404,
+          "url": "http://localhost:3000/sitemap.xml"
+        }
+      ],
+      "coverage": {
+        "pages": [
+          {
+            "url": "http://localhost:3000/",
+            "title": "Sentinel Scan",
+            "status": 200,
+            "contentType": "text/html; charset=utf-8",
+            "formsCount": 1,
+            "passwordForms": 0,
+            "inlineScriptCount": 0,
+            "externalScriptHosts": [],
+            "internalLinks": 0,
+            "loginSignal": false,
+            "findingsCount": 1
+          }
+        ],
+        "pagesCrawled": 1,
+        "maxPages": 3,
+        "crawlEnabled": true
+      },
+      "inventory": {
+        "totalForms": 1,
+        "totalPasswordForms": 0,
+        "externalScriptHosts": [],
+        "loginPages": []
+      },
+      "findings": [
+        {
+          "id": "http-without-https-upgrade",
+          "title": "HTTP target did not upgrade to HTTPS",
+          "severity": "critical",
+          "category": "transport",
+          "description": "The target was submitted over HTTP and did not end on an HTTPS destination.",
+          "impact": "Traffic remains exposed to interception and tampering in transit.",
+          "remediation": "Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS.",
+          "evidence": "Submitted target: http://localhost:3000/ | Final URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "missing-content-security-policy",
+          "title": "Content Security Policy is missing",
+          "severity": "high",
+          "category": "headers",
+          "description": "content-security-policy was not present in the HTTP response.",
+          "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
+          "remediation": "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
+          "evidence": "Response URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "missing-x-frame-options",
+          "title": "Clickjacking protection header is missing",
+          "severity": "medium",
+          "category": "headers",
+          "description": "x-frame-options was not present in the HTTP response.",
+          "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
+          "remediation": "Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.",
+          "evidence": "Response URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "missing-x-content-type-options",
+          "title": "MIME sniffing protection is missing",
+          "severity": "medium",
+          "category": "headers",
+          "description": "x-content-type-options was not present in the HTTP response.",
+          "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
+          "remediation": "Set X-Content-Type-Options to nosniff.",
+          "evidence": "Response URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "csrf-token-not-observed-http://localhost:3000/",
+          "title": "No obvious CSRF token markers found in forms",
+          "severity": "medium",
+          "category": "forms",
+          "description": "The HTML did not include common token names often used to protect state-changing form submissions.",
+          "impact": "If the application relies on cookies for session state, cross-site request forgery risks may be higher.",
+          "remediation": "Review state-changing forms and ensure CSRF protections are consistently enforced server-side.",
+          "evidence": "Searched for token markers on http://localhost:3000/.",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "missing-referrer-policy",
+          "title": "Referrer policy is missing",
+          "severity": "low",
+          "category": "headers",
+          "description": "referrer-policy was not present in the HTTP response.",
+          "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
+          "remediation": "Set Referrer-Policy to a privacy-preserving value such as strict-origin-when-cross-origin.",
+          "evidence": "Response URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "missing-permissions-policy",
+          "title": "Permissions Policy is missing",
+          "severity": "low",
+          "category": "headers",
+          "description": "permissions-policy was not present in the HTTP response.",
+          "impact": "Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.",
+          "remediation": "Add a Permissions-Policy header to explicitly disable browser features your application does not need.",
+          "evidence": "Response URL: http://localhost:3000/",
+          "location": "http://localhost:3000/"
+        },
+        {
+          "id": "security-txt-missing",
+          "title": "security.txt not found",
+          "severity": "info",
+          "category": "governance",
+          "description": "The standard /.well-known/security.txt contact file was not detected during this passive review.",
+          "impact": "External researchers and internal testers may have a less clear route for reporting vulnerabilities responsibly.",
+          "remediation": "Publish a security.txt file with a monitored disclosure contact, policy, and encryption metadata where appropriate.",
+          "evidence": "Checked /.well-known/security.txt -> status 404",
+          "location": "http://localhost:3000/.well-known/security.txt"
+        },
+        {
+          "id": "sitemap-not-found",
+          "title": "sitemap.xml not found",
+          "severity": "info",
+          "category": "coverage",
+          "description": "A sitemap was not detected, which can make broad passive discovery harder for both defenders and search engines.",
+          "impact": "The scan may have a smaller picture of the site's public structure when link discovery is limited.",
+          "remediation": "Consider publishing a current sitemap.xml to improve discoverability and easier defensive inventorying.",
+          "evidence": "Checked /sitemap.xml -> status 404",
+          "location": "http://localhost:3000/sitemap.xml"
+        }
+      ],
+      "report": {
+        "executiveSummary": "The scan covered 1 page(s) and identified 9 finding(s). The highest-priority work should focus on the transport, headers controls that reduce exposure across the whole application.",
+        "threatNarrative": "An attacker performing initial reconnaissance could use the observed weaknesses to fingerprint the stack, inspect login and content flows, and focus on the parts of the site with weaker transport, browser hardening, or dependency hygiene. The current scan stays passive and should be followed with manual validation where risk is highest.",
+        "attackSurface": "The crawl observed 1 page(s), 1 form(s), 0 password-entry surface(s), and 0 third-party script host(s).",
+        "coverageNotes": "Same-origin crawl was enabled with a limit of 3 page(s).",
+        "priorityActions": [
+          {
+            "priority": 1,
+            "action": "Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS.",
+            "reason": "HTTP target did not upgrade to HTTPS (critical)"
+          },
+          {
+            "priority": 2,
+            "action": "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
+            "reason": "Content Security Policy is missing (high)"
+          },
+          {
+            "priority": 3,
+            "action": "Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.",
+            "reason": "Clickjacking protection header is missing (medium)"
+          },
+          {
+            "priority": 4,
+            "action": "Set X-Content-Type-Options to nosniff.",
+            "reason": "MIME sniffing protection is missing (medium)"
+          },
+          {
+            "priority": 5,
+            "action": "Review state-changing forms and ensure CSRF protections are consistently enforced server-side.",
+            "reason": "No obvious CSRF token markers found in forms (medium)"
+          }
+        ],
+        "quickWins": [
+          "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
+          "Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.",
+          "Set X-Content-Type-Options to nosniff."
+        ]
+      },
+      "markdown": "# Sentinel Scan Report\n\n- Target: http://localhost:3000/\n- Final URL: http://localhost:3000/\n- Scanned at: 2026-05-02T11:13:18.077Z\n- Risk score: 35/100 (Moderate)\n- Findings: 9\n- Pages crawled: 1\n\n## Executive Summary\n\nThe scan covered 1 page(s) and identified 9 finding(s). The highest-priority work should focus on the transport, headers controls that reduce exposure across the whole application.\n\n## Threat Narrative\n\nAn attacker performing initial reconnaissance could use the observed weaknesses to fingerprint the stack, inspect login and content flows, and focus on the parts of the site with weaker transport, browser hardening, or dependency hygiene. The current scan stays passive and should be followed with manual validation where risk is highest.\n\n## Attack Surface\n\nThe crawl observed 1 page(s), 1 form(s), 0 password-entry surface(s), and 0 third-party script host(s).\n\n## Priority Actions\n\n1. Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS. (HTTP target did not upgrade to HTTPS (critical))\n2. Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins. (Content Security Policy is missing (high))\n3. Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement. (Clickjacking protection header is missing (medium))\n4. Set X-Content-Type-Options to nosniff. (MIME sniffing protection is missing (medium))\n5. Review state-changing forms and ensure CSRF protections are consistently enforced server-side. (No obvious CSRF token markers found in forms (medium))\n\n## Coverage\n\n- Same-origin crawl was enabled with a limit of 3 page(s).\n- Login-like pages observed: 0\n- External script hosts: None detected\n\n## Pages\n\n- http://localhost:3000/ | status 200 | forms 1 | findings 1\n\n## Findings\n\n### HTTP target did not upgrade to HTTPS\n- Severity: critical\n- Category: transport\n- Location: http://localhost:3000/\n- Description: The target was submitted over HTTP and did not end on an HTTPS destination.\n- Impact: Traffic remains exposed to interception and tampering in transit.\n- Remediation: Enable HTTPS across the site and enforce a permanent redirect from HTTP to HTTPS.\n- Evidence: Submitted target: http://localhost:3000/ | Final URL: http://localhost:3000/\n\n### Content Security Policy is missing\n- Severity: high\n- Category: headers\n- Location: http://localhost:3000/\n- Description: content-security-policy was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.\n- Evidence: Response URL: http://localhost:3000/\n\n### Clickjacking protection header is missing\n- Severity: medium\n- Category: headers\n- Location: http://localhost:3000/\n- Description: x-frame-options was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Set X-Frame-Options to DENY or SAMEORIGIN unless cross-origin framing is a deliberate requirement.\n- Evidence: Response URL: http://localhost:3000/\n\n### MIME sniffing protection is missing\n- Severity: medium\n- Category: headers\n- Location: http://localhost:3000/\n- Description: x-content-type-options was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Set X-Content-Type-Options to nosniff.\n- Evidence: Response URL: http://localhost:3000/\n\n### No obvious CSRF token markers found in forms\n- Severity: medium\n- Category: forms\n- Location: http://localhost:3000/\n- Description: The HTML did not include common token names often used to protect state-changing form submissions.\n- Impact: If the application relies on cookies for session state, cross-site request forgery risks may be higher.\n- Remediation: Review state-changing forms and ensure CSRF protections are consistently enforced server-side.\n- Evidence: Searched for token markers on http://localhost:3000/.\n\n### Referrer policy is missing\n- Severity: low\n- Category: headers\n- Location: http://localhost:3000/\n- Description: referrer-policy was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Set Referrer-Policy to a privacy-preserving value such as strict-origin-when-cross-origin.\n- Evidence: Response URL: http://localhost:3000/\n\n### Permissions Policy is missing\n- Severity: low\n- Category: headers\n- Location: http://localhost:3000/\n- Description: permissions-policy was not present in the HTTP response.\n- Impact: Browsers may be missing a layer of client-side hardening, increasing exposure to common web attacks.\n- Remediation: Add a Permissions-Policy header to explicitly disable browser features your application does not need.\n- Evidence: Response URL: http://localhost:3000/\n\n### security.txt not found\n- Severity: info\n- Category: governance\n- Location: http://localhost:3000/.well-known/security.txt\n- Description: The standard /.well-known/security.txt contact file was not detected during this passive review.\n- Impact: External researchers and internal testers may have a less clear route for reporting vulnerabilities responsibly.\n- Remediation: Publish a security.txt file with a monitored disclosure contact, policy, and encryption metadata where appropriate.\n- Evidence: Checked /.well-known/security.txt -> status 404\n\n### sitemap.xml not found\n- Severity: info\n- Category: coverage\n- Location: http://localhost:3000/sitemap.xml\n- Description: A sitemap was not detected, which can make broad passive discovery harder for both defenders and search engines.\n- Impact: The scan may have a smaller picture of the site's public structure when link discovery is limited.\n- Remediation: Consider publishing a current sitemap.xml to improve discoverability and easier defensive inventorying.\n- Evidence: Checked /sitemap.xml -> status 404\n\n## Scope Notes\n\nThis platform performs passive, low-impact checks intended for authorized security reviews. It does not exploit vulnerabilities, brute force content, or perform intrusive testing.",
+      "scope": {
+        "mode": "passive-authorized-review",
+        "limitations": [
+          "No active exploitation or credentialed testing is performed.",
+          "Results are heuristic and should be validated manually before remediation or disclosure decisions."
+        ]
+      }
     }
-  }
-]
+  ]
+}
