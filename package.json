@@ -1,0 +1,17 @@
+{
+  "name": "sentinel-scan",
+  "version": "1.0.0",
+  "description": "AI-assisted web security scanning platform for authorized websites",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "keywords": [
+    "security",
+    "scanner",
+    "web-security",
+    "dashboard",
+    "authorized-testing"
+  ],
+  "license": "MIT"
+}
