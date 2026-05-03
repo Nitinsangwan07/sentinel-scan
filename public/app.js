@@ -258,22 +258,50 @@ function renderHistory() {
 
 function renderSummary(scan) {
   if (!scan) {
-    riskBand.textContent = "No Data";
-    riskBand.className = "chip neutral";
-    riskScore.textContent = "--";
-    findingTotal.textContent = "--";
-    pagesCrawled.textContent = "--";
-    scanDuration.textContent = "--";
+  if (riskBand) {
+  riskBand.textContent = "No Data";
+  riskBand.className = "chip neutral";
+}
+
+if (riskScore) {
+  riskScore.textContent = "--";
+}
+
+if (findingTotal) {
+  findingTotal.textContent = "--";
+}
+
+if (pagesCrawled) {
+  pagesCrawled.textContent = "--";
+}
+
+if (scanDuration) {
+  scanDuration.textContent = "--";
+}
     renderSeverityChart({});
     return;
   }
 
+  if (riskBand) {
   riskBand.textContent = scan.risk.band;
   riskBand.className = `chip ${scan.risk.band.toLowerCase()}`;
+}
+
+if (riskScore) {
   riskScore.textContent = `${scan.risk.score}/100`;
+}
+
+if (findingTotal) {
   findingTotal.textContent = String(scan.summary.total);
+}
+
+if (pagesCrawled) {
   pagesCrawled.textContent = String(scan.coverage.pagesCrawled);
+}
+
+if (scanDuration) {
   scanDuration.textContent = formatDuration(scan.durationMs);
+}
   renderSeverityChart(scan.summary.bySeverity);
 }
 
@@ -346,9 +374,9 @@ function renderReport(scan) {
 }
 
 function renderAiContent(aiAssist) {
-  if (!aiAssist) {
-    aiContent.className = "report-content empty";
-    aiContent.textContent = "AI explanations will appear here for the selected scan.";
+  const aiContent = document.getElementById("ai-content");
+
+  if (!aiContent) {
     return;
   }
 
