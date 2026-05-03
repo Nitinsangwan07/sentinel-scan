@@ -6,63 +6,97 @@
     <title>Sentinel Scan</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
-  <body>
+  <body data-theme="dark">
     <div class="page-shell">
       <header class="hero">
         <div class="hero-copy">
-          <p class="eyebrow">AI-Assisted Authorized Security Reviews</p>
+          <p class="eyebrow">Ethical Passive Security Reviews</p>
           <h1>Sentinel Scan</h1>
           <p class="hero-text">
-            Run passive security reviews against websites you are allowed to assess, crawl a few
-            same-origin pages for wider coverage, and turn the findings into remediation-ready
-            engineering reports.
+            A professional passive web security dashboard for authorized sites. Inspect headers,
+            TLS, content flows, third-party assets, and remediation guidance without crossing into
+            exploitative behavior.
           </p>
+          <div class="hero-actions">
+            <button id="theme-toggle" type="button" class="secondary-button">Toggle Theme</button>
+            <span class="hero-badge">Passive only</span>
+            <span class="hero-badge">Authorized targets only</span>
+          </div>
         </div>
 
-        <div class="hero-card">
-          <div class="hero-metric">
-            <span>Release</span>
-            <strong>Persistent scan workspace with saved history</strong>
+        <section id="auth-panel" class="hero-card auth-card">
+          <div class="panel-heading compact">
+            <div>
+              <p class="section-label">Access</p>
+              <h2>Secure Workspace</h2>
+            </div>
           </div>
-          <div class="hero-metric">
-            <span>Coverage</span>
-            <strong>Headers, TLS, cookies, forms, page crawl, asset inventory</strong>
+
+          <div class="auth-tabs">
+            <button id="show-login" class="auth-tab active" type="button">Login</button>
+            <button id="show-signup" class="auth-tab" type="button">Sign Up</button>
           </div>
-          <div class="hero-metric">
-            <span>Guardrail</span>
-            <strong>Passive checks only for explicitly authorized targets</strong>
-          </div>
-        </div>
+
+          <form id="login-form" class="auth-form">
+            <label for="login-email">Email</label>
+            <input id="login-email" name="email" type="email" placeholder="security@example.com" required />
+            <label for="login-password">Password</label>
+            <input id="login-password" name="password" type="password" placeholder="Enter password" required />
+            <button type="submit">Login</button>
+          </form>
+
+          <form id="signup-form" class="auth-form hidden">
+            <label for="signup-name">Name</label>
+            <input id="signup-name" name="name" type="text" placeholder="Security Engineer" required />
+            <label for="signup-email">Email</label>
+            <input id="signup-email" name="email" type="email" placeholder="security@example.com" required />
+            <label for="signup-password">Password</label>
+            <input id="signup-password" name="password" type="password" placeholder="Create password" required />
+            <button type="submit">Create Account</button>
+          </form>
+
+          <p id="auth-message" class="helper-text">Sign in to manage user-specific scans and exports.</p>
+        </section>
       </header>
 
-      <main class="dashboard">
+      <main id="dashboard" class="dashboard hidden">
+        <section class="panel topbar-panel">
+          <div class="panel-heading compact">
+            <div>
+              <p class="section-label">Operator</p>
+              <h2 id="user-greeting">Welcome</h2>
+            </div>
+            <div class="topbar-actions">
+              <span id="storage-mode" class="chip">Storage</span>
+              <button id="logout-button" type="button" class="secondary-button">Logout</button>
+            </div>
+          </div>
+          <div id="status-banner" class="status-banner idle">
+            <span id="status-spinner" class="spinner" aria-hidden="true"></span>
+            <span id="status-text">Ready for a passive scan.</span>
+          </div>
+        </section>
+
         <section class="panel control-panel">
           <div class="panel-heading">
             <div>
               <p class="section-label">Run A Scan</p>
               <h2>Target Intake</h2>
             </div>
-            <span class="badge">Low Impact</span>
+            <span class="chip danger">Ethical mode</span>
           </div>
 
           <form id="scan-form" class="scan-form">
             <label for="target-url">Authorized website URL</label>
             <div class="input-row">
-              <input
-                id="target-url"
-                name="url"
-                type="url"
-                placeholder="https://example.com"
-                autocomplete="off"
-                required
-              />
-              <button id="scan-button" type="submit">Analyze Site</button>
+              <input id="target-url" name="url" type="url" placeholder="https://example.com" required />
+              <button id="scan-button" type="submit">Analyze</button>
             </div>
 
             <div class="form-grid">
               <label class="toggle-field">
                 <input id="include-subpages" name="includeSubpages" type="checkbox" checked />
-                <span>Enable same-origin crawl</span>
+                <span>Crawl same-origin subpages</span>
               </label>
 
               <label class="select-field" for="max-pages">
@@ -81,17 +115,69 @@
               <input id="authorized-consent" type="checkbox" required />
               <span>I confirm I am authorized to assess this website.</span>
             </label>
-
-            <p class="hint">
-              Sentinel Scan stays passive. It does not exploit, brute force, or perform intrusive
-              testing.
-            </p>
           </form>
+        </section>
 
-          <div id="status-banner" class="status-banner idle">
-            <span id="status-spinner" class="spinner" aria-hidden="true"></span>
-            <span id="status-text">Ready for an authorized passive scan.</span>
+        <section class="panel metrics-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Scan Metrics</p>
+              <h2>Program Overview</h2>
+            </div>
           </div>
+
+          <div class="scoreboard">
+            <article class="score-card accent">
+              <span>Total Scans</span>
+              <strong id="total-scans">0</strong>
+            </article>
+            <article class="score-card">
+              <span>Average Risk</span>
+              <strong id="average-risk">0</strong>
+            </article>
+            <article class="score-card">
+              <span>Current Risk</span>
+              <strong id="risk-score">--</strong>
+            </article>
+            <article class="score-card">
+              <span>Duration</span>
+              <strong id="scan-duration">--</strong>
+            </article>
+            <article class="score-card">
+              <span>Pages Crawled</span>
+              <strong id="pages-crawled">--</strong>
+            </article>
+            <article class="score-card">
+              <span>Total Findings</span>
+              <strong id="finding-total">--</strong>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel visual-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Visuals</p>
+              <h2>Severity And Trend</h2>
+            </div>
+            <span id="risk-band" class="chip neutral">No Data</span>
+          </div>
+
+          <div class="visual-grid">
+            <article class="report-block">
+              <h3>Severity Breakdown</h3>
+              <div class="severity-visuals">
+                <div id="severity-chart" class="severity-chart empty">Awaiting scan</div>
+                <div id="severity-breakdown" class="severity-breakdown empty">Run a scan to view severity distribution.</div>
+              </div>
+            </article>
+
+            <article class="report-block">
+              <h3>Risk Trend</h3>
+              <div id="risk-trend" class="risk-trend empty">No scan history yet.</div>
+            </article>
+          </div>
+          <p class="disclaimer-text">Findings are heuristic and should be manually validated.</p>
         </section>
 
         <section class="panel history-panel">
@@ -100,72 +186,44 @@
               <p class="section-label">Saved Scans</p>
               <h2>Recent History</h2>
             </div>
-            <div class="mini-metric">
-              <span>Total Scans</span>
-              <strong id="total-scans">0</strong>
-            </div>
           </div>
-          <div id="history-list" class="history-list empty">
-            No saved scans yet. Run your first scan to populate this workspace.
-          </div>
+          <div id="history-list" class="history-list empty">No scans yet.</div>
         </section>
 
-        <section class="panel summary-panel">
+        <section class="panel report-panel">
           <div class="panel-heading">
             <div>
-              <p class="section-label">Risk Snapshot</p>
-              <h2>Latest Assessment</h2>
+              <p class="section-label">Report Center</p>
+              <h2>Exports And Guidance</h2>
             </div>
-            <span id="risk-band" class="score-pill neutral">No Data</span>
-          </div>
-
-          <div class="scoreboard">
-            <div class="score-card accent">
-              <span>Risk Score</span>
-              <strong id="risk-score">--</strong>
-            </div>
-            <div class="score-card">
-              <span>Total Findings</span>
-              <strong id="finding-total">--</strong>
-            </div>
-            <div class="score-card">
-              <span>Pages Crawled</span>
-              <strong id="pages-crawled">--</strong>
-            </div>
-            <div class="score-card">
-              <span>Forms Observed</span>
-              <strong id="forms-observed">--</strong>
-            </div>
-            <div class="score-card">
-              <span>Script Hosts</span>
-              <strong id="script-hosts">--</strong>
-            </div>
-            <div class="score-card">
-              <span>Final URL</span>
-              <strong id="final-url">Waiting for scan</strong>
-            </div>
-            <div class="score-card">
-              <span>Scan Duration</span>
-              <strong id="scan-duration">--</strong>
+            <div class="actions">
+              <button id="download-pdf" type="button" disabled>PDF</button>
+              <button id="download-txt" type="button" disabled>TXT</button>
+              <button id="download-md" type="button" disabled>Markdown</button>
+              <button id="download-json" type="button" disabled>JSON</button>
+              <button id="download-html" type="button" disabled>HTML</button>
             </div>
           </div>
 
-          <div class="severity-visuals">
-            <div id="severity-chart" class="severity-chart empty">Run a scan</div>
-            <div class="severity-side">
-              <div id="severity-breakdown" class="severity-breakdown empty">
-                Run a scan to populate the severity distribution.
-              </div>
+          <div id="report-content" class="report-content empty">Run a scan to generate a report.</div>
+        </section>
+
+        <section class="panel ai-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">AI Assist</p>
+              <h2>Simple-Language Explanations</h2>
             </div>
+            <button id="refresh-ai" type="button" class="secondary-button" disabled>Refresh AI Notes</button>
           </div>
-          <p class="disclaimer-text">Findings are heuristic and should be manually validated.</p>
+          <div id="ai-content" class="report-content empty">AI explanations will appear here for the selected scan.</div>
         </section>
 
         <section class="panel filters-panel">
           <div class="panel-heading">
             <div>
-              <p class="section-label">Review Findings</p>
-              <h2>Filters</h2>
+              <p class="section-label">Findings Review</p>
+              <h2>Search And Filter</h2>
             </div>
           </div>
 
@@ -191,55 +249,30 @@
 
             <label class="select-field search-field" for="search-filter">
               <span>Search</span>
-              <input id="search-filter" type="search" placeholder="headers, cookie, CSP..." />
+              <input id="search-filter" type="search" placeholder="CSP, TLS, cookies, admin..." />
             </label>
           </div>
           <p id="filter-results" class="filter-results">Showing 0 findings.</p>
         </section>
 
-        <section class="panel wide-panel">
-          <div class="panel-heading">
-            <div>
-              <p class="section-label">AI Report</p>
-              <h2>Executive Narrative</h2>
-            </div>
-            <div class="actions">
-              <button id="download-pdf" type="button" disabled>Download PDF</button>
-              <button id="download-txt" type="button" disabled>Download TXT</button>
-              <button id="download-json" type="button" disabled>Download JSON</button>
-              <button id="download-md" type="button" disabled>Download Markdown</button>
-              <button id="download-html" type="button" disabled>Download HTML</button>
-            </div>
-          </div>
-
-          <div id="report-content" class="report-content empty">
-            Your remediation narrative will appear here after the first scan.
-          </div>
-        </section>
-
-        <section class="panel wide-panel">
+        <section class="panel coverage-panel">
           <div class="panel-heading">
             <div>
               <p class="section-label">Coverage</p>
-              <h2>Pages And Attack Surface</h2>
+              <h2>Pages And Asset Inventory</h2>
             </div>
           </div>
-          <div id="coverage-content" class="coverage-content empty">
-            No page coverage data yet.
-          </div>
+          <div id="coverage-content" class="coverage-content empty">No coverage data yet.</div>
         </section>
 
-        <section class="panel wide-panel">
+        <section class="panel findings-panel">
           <div class="panel-heading">
             <div>
-              <p class="section-label">Findings</p>
-              <h2>Detailed Security Observations</h2>
+              <p class="section-label">Detailed Findings</p>
+              <h2>Passive Security Observations</h2>
             </div>
           </div>
-          <div id="findings-list" class="findings-list empty">
-            No findings to display yet.
-          </div>
-          <p class="disclaimer-text">Findings are heuristic and should be manually validated.</p>
+          <div id="findings-list" class="findings-list empty">No findings to display yet.</div>
         </section>
       </main>
     </div>
