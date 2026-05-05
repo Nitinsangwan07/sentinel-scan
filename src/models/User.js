@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
       minlength: 2,
       maxlength: 80,
     },
+
     email: {
       type: String,
       required: true,
@@ -17,19 +18,23 @@ const userSchema = new mongoose.Schema(
       trim: true,
       index: true,
     },
+
     passwordHash: {
       type: String,
       default: null,
     },
+
     authProvider: {
       type: String,
       enum: ["local", "google"],
       default: "local",
     },
+
     googleId: {
       type: String,
       default: null,
-      index: true,
+      unique: true,
+      sparse: true,
     },
   },
   {
@@ -37,6 +42,5 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-userSchema.index({ googleId: 1 }, { sparse: true });
-
-export const UserModel = mongoose.models.User || mongoose.model("User", userSchema);
+export const UserModel =
+  mongoose.models.User || mongoose.model("User", userSchema);
