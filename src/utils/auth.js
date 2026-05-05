@@ -16,10 +16,15 @@ export function issueToken(user) {
     {
       sub: user.id,
       email: user.email,
+      provider: user.authProvider || "local",
     },
     appConfig.jwtSecret,
     {
       expiresIn: appConfig.jwtExpiresIn,
     },
   );
+}
+
+export function decodeToken(token) {
+  return jwt.verify(token, appConfig.jwtSecret);
 }

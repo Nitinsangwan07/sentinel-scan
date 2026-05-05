@@ -5,7 +5,7 @@ const USER_AGENT =
 
 const DEFAULT_SCAN_OPTIONS = {
   includeSubpages: true,
-  maxPages: 3,
+  maxPages: 6,
   requestTimeoutMs: 12000,
 };
 
@@ -25,6 +25,16 @@ const OUTDATED_JS_RULES = [
   { library: "Bootstrap", pattern: /bootstrap(?:\.bundle)?(?:\.min)?[-.]?(\d+\.\d+\.\d+)/i, safeMajor: 5, safeMinor: 3 },
 ];
 
+const EXPOSED_TOKEN_PATTERNS = [
+  { name: "Google API key", pattern: /AIza[0-9A-Za-z\-_]{35}/g },
+  { name: "AWS access key", pattern: /AKIA[0-9A-Z]{16}/g },
+  { name: "GitHub token", pattern: /gh[pousr]_[A-Za-z0-9_]{30,}/g },
+  { name: "Slack token", pattern: /xox[baprs]-[A-Za-z0-9-]{20,}/g },
+];
+const COMMENT_RISK_PATTERN = /(todo|fixme|hack|temporary|internal|secret|apikey|api key|token)/i;
+const CLOUD_STORAGE_HINT = /(?:s3\.amazonaws\.com|\.s3\.amazonaws\.com|storage\.googleapis\.com|blob\.core\.windows\.net|digitaloceanspaces\.com|firebasestorage\.googleapis\.com)/i;
+const INLINE_SCRIPT_RISK = /(eval\(|new Function\(|document\.write\(|innerHTML\s*=|outerHTML\s*=|localStorage\.setItem\(["'](?:token|jwt|auth))/i;
+
 const SENSITIVE_PATH_PATTERN = /(login|signin|admin|dashboard|account|portal|auth)/i;
 const SCRIPT_HOST_RISK_HINT = /(raw\.githubusercontent\.com|gist\.githubusercontent\.com|pastebin\.com|rawgit\.com)/i;
 const SENSITIVE_FILE_PATHS = [
@@ -42,7 +52,7 @@ export function normalizeScanOptions(options = {}) {
   const includeSubpages = options.includeSubpages !== false;
   const requestedMaxPages = Number(options.maxPages);
   const maxPages = includeSubpages
-    ? clamp(Number.isFinite(requestedMaxPages) ? requestedMaxPages : DEFAULT_SCAN_OPTIONS.maxPages, 2, 6)
+    ? clamp(Number.isFinite(requestedMaxPages) ? requestedMaxPages : DEFAULT_SCAN_OPTIONS.maxPages, 2, 10)
     : 1;
   const requestTimeoutMs = clamp(
     Number.isFinite(Number(options.requestTimeoutMs))
@@ -63,6 +73,12 @@ function severityWeight(severity) {
   return { critical: 10, high: 7, medium: 4, low: 2, info: 1 }[severity] || 0;
 }
 
+function confidenceLabel(score) {
+  if (score >= 85) return "high";
+  if (score >= 65) return "medium";
+  return "low";
+}
+
 function buildFinding({
   id,
   title,
@@ -73,17 +89,25 @@ function buildFinding({
   remediation,
   evidence,
   location,
+  confidence = 72,
+  affectedUrls = [],
 }) {
+  const normalizedConfidence = clamp(Math.round(confidence), 5, 99);
+
   return {
     id,
     title,
     severity,
+    score: severityWeight(severity),
     category,
     description,
     impact,
     remediation,
     evidence,
     location,
+    confidence: normalizedConfidence,
+    confidenceLabel: confidenceLabel(normalizedConfidence),
+    affectedUrls: [...new Set((affectedUrls || []).filter(Boolean))],
   };
 }
 
@@ -1438,3 +1462,5 @@ export async function scanWebsite(target, requestedOptions = {}) {
     },
   };
 }
+
+

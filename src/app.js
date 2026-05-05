@@ -53,9 +53,14 @@ app.use(express.static(publicDir, { extensions: ["html"] }));
 
 app.get("/api/health", (request, response) => {
   response.json({
+    ok: true,
     status: "ok",
     service: "sentinel-scan",
+    version: "3.1.0",
     storageMode: appConfig.storageMode,
+    auth: {
+      googleEnabled: Boolean(appConfig.googleClientId),
+    },
     timestamp: new Date().toISOString(),
   });
 });

@@ -15,6 +15,7 @@ export const appConfig = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "8h",
   corsOrigin: process.env.CORS_ORIGIN || "*",
   storageMode: process.env.MONGODB_URI ? "mongo" : "json-fallback",
+  googleClientId: process.env.GOOGLE_CLIENT_ID || "",
   aiProvider: process.env.AI_PROVIDER || "heuristic",
   aiApiKey: process.env.AI_API_KEY || "",
   aiApiUrl: process.env.AI_API_URL || "",

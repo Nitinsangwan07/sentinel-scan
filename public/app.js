@@ -1,13 +1,16 @@
+
 const state = {
-  token: localStorage.getItem("sentinelToken") || "",
+  token: localStorage.getItem("sentinelToken") || sessionStorage.getItem("sentinelToken") || "",
+  tokenStorage: localStorage.getItem("sentinelToken") ? "local" : sessionStorage.getItem("sentinelToken") ? "session" : "local",
+  authConfig: { googleEnabled: false, googleClientId: "" },
   user: null,
   scans: [],
+  activeScan: null,
   metrics: {
     totalScans: 0,
     averageRisk: 0,
     riskTrend: [],
   },
-  activeScan: null,
   filters: {
     severity: "all",
     category: "all",
@@ -15,49 +18,54 @@ const state = {
   },
 };
 
-const authPanel = document.querySelector("#auth-panel");
-const dashboard = document.querySelector("#dashboard");
-const authMessage = document.querySelector("#auth-message");
-const loginForm = document.querySelector("#login-form");
-const signupForm = document.querySelector("#signup-form");
-const showLogin = document.querySelector("#show-login");
-const showSignup = document.querySelector("#show-signup");
-const userGreeting = document.querySelector("#user-greeting");
-const storageMode = document.querySelector("#storage-mode");
-const logoutButton = document.querySelector("#logout-button");
-const themeToggle = document.querySelector("#theme-toggle");
-const statusBanner = document.querySelector("#status-banner");
-const statusSpinner = document.querySelector("#status-spinner");
-const statusText = document.querySelector("#status-text");
-const form = document.querySelector("#scan-form");
-const scanButton = document.querySelector("#scan-button");
-const includeSubpages = document.querySelector("#include-subpages");
-const maxPages = document.querySelector("#max-pages");
-const riskBand = document.querySelector("#risk-band");
-const riskScore = document.querySelector("#risk-score");
-const findingTotal = document.querySelector("#finding-total");
-const pagesCrawled = document.querySelector("#pages-crawled");
-const totalScans = document.querySelector("#total-scans");
-const averageRisk = document.querySelector("#average-risk");
-const scanDuration = document.querySelector("#scan-duration");
-const severityChart = document.querySelector("#severity-chart");
-const severityBreakdown = document.querySelector("#severity-breakdown");
-const riskTrend = document.querySelector("#risk-trend");
-const historyList = document.querySelector("#history-list");
-const reportContent = document.querySelector("#report-content");
-const aiContent = document.querySelector("#ai-content");
-const refreshAi = document.querySelector("#refresh-ai");
-const categoryFilter = document.querySelector("#category-filter");
-const severityFilter = document.querySelector("#severity-filter");
-const searchFilter = document.querySelector("#search-filter");
-const filterResults = document.querySelector("#filter-results");
-const coverageContent = document.querySelector("#coverage-content");
-const findingsList = document.querySelector("#findings-list");
-const downloadPdf = document.querySelector("#download-pdf");
-const downloadTxt = document.querySelector("#download-txt");
-const downloadMd = document.querySelector("#download-md");
-const downloadJson = document.querySelector("#download-json");
-const downloadHtml = document.querySelector("#download-html");
+const els = {
+  authPanel: document.querySelector("#auth-panel"),
+  dashboard: document.querySelector("#dashboard"),
+  authMessage: document.querySelector("#auth-message"),
+  loginForm: document.querySelector("#login-form"),
+  signupForm: document.querySelector("#signup-form"),
+  showLogin: document.querySelector("#show-login"),
+  showSignup: document.querySelector("#show-signup"),
+  userGreeting: document.querySelector("#user-greeting"),
+  storageMode: document.querySelector("#storage-mode"),
+  logoutButton: document.querySelector("#logout-button"),
+  themeToggle: document.querySelector("#theme-toggle"),
+  statusBanner: document.querySelector("#status-banner"),
+  statusSpinner: document.querySelector("#status-spinner"),
+  statusText: document.querySelector("#status-text"),
+  form: document.querySelector("#scan-form"),
+  scanButton: document.querySelector("#scan-button"),
+  includeSubpages: document.querySelector("#include-subpages"),
+  maxPages: document.querySelector("#max-pages"),
+  riskBand: document.querySelector("#risk-band"),
+  riskScore: document.querySelector("#risk-score"),
+  findingTotal: document.querySelector("#finding-total"),
+  pagesCrawled: document.querySelector("#pages-crawled"),
+  totalScans: document.querySelector("#total-scans"),
+  averageRisk: document.querySelector("#average-risk"),
+  scanDuration: document.querySelector("#scan-duration"),
+  topCategory: document.querySelector("#top-category"),
+  severityChart: document.querySelector("#severity-chart"),
+  severityBreakdown: document.querySelector("#severity-breakdown"),
+  riskTrend: document.querySelector("#risk-trend"),
+  historyList: document.querySelector("#history-list"),
+  reportContent: document.querySelector("#report-content"),
+  aiContent: document.querySelector("#ai-content"),
+  categoryFilter: document.querySelector("#category-filter"),
+  severityFilter: document.querySelector("#severity-filter"),
+  searchFilter: document.querySelector("#search-filter"),
+  filterResults: document.querySelector("#filter-results"),
+  coverageContent: document.querySelector("#coverage-content"),
+  findingsList: document.querySelector("#findings-list"),
+  activityFeed: document.querySelector("#activity-feed"),
+  downloadPdf: document.querySelector("#download-pdf"),
+  downloadTxt: document.querySelector("#download-txt"),
+  downloadMd: document.querySelector("#download-md"),
+  downloadJson: document.querySelector("#download-json"),
+  downloadHtml: document.querySelector("#download-html"),
+  googleAuthWrapper: document.querySelector("#google-auth-wrapper"),
+  googleSigninButton: document.querySelector("#google-signin-button"),
+};
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -73,67 +81,68 @@ function setTheme(theme) {
   localStorage.setItem("sentinelTheme", theme);
 }
 
-function toggleTheme() {
-  setTheme(document.body.dataset.theme === "dark" ? "light" : "dark");
+function clearSessionArtifacts() {
+  localStorage.removeItem("sentinelToken");
+  sessionStorage.removeItem("sentinelToken");
+  document.cookie = "sentinelToken=; Max-Age=0; path=/";
+  document.cookie = "token=; Max-Age=0; path=/";
+  document.cookie = "authToken=; Max-Age=0; path=/";
+}
+
+function setToken(token, storage = "local") {
+  state.token = token || "";
+  state.tokenStorage = storage;
+  clearSessionArtifacts();
+  if (!token) return;
+  (storage === "session" ? sessionStorage : localStorage).setItem("sentinelToken", token);
 }
 
 function setStatus(type, message) {
-  statusBanner.className = `status-banner ${type}`;
-  statusSpinner.hidden = type !== "loading";
-  statusText.textContent = message;
+  els.statusBanner.className = `status-banner ${type}`;
+  els.statusSpinner.hidden = type !== "loading";
+  els.statusText.textContent = message;
 }
 
 function setAuthMessage(message, type = "info") {
-  authMessage.textContent = message;
-  authMessage.dataset.type = type;
+  els.authMessage.textContent = message;
+  els.authMessage.dataset.type = type;
 }
 
-function setToken(token) {
-  state.token = token || "";
+function setAuthenticated(isAuthenticated) {
+  els.authPanel.classList.toggle("hidden", isAuthenticated);
+  els.dashboard.classList.toggle("hidden", !isAuthenticated);
+}
 
-  if (state.token) {
-    localStorage.setItem("sentinelToken", state.token);
-  } else {
-    localStorage.removeItem("sentinelToken");
-  }
+function setLoadingSkeleton(isLoading) {
+  [els.historyList, els.reportContent, els.coverageContent, els.findingsList, els.activityFeed].forEach((node) => {
+    node.classList.toggle("skeleton", isLoading);
+  });
 }
 
 function authHeaders(extra = {}) {
-  return state.token
-    ? {
-        ...extra,
-        Authorization: `Bearer ${state.token}`,
-      }
-    : extra;
+  return state.token ? { ...extra, Authorization: `Bearer ${state.token}` } : extra;
 }
 
 async function fetchJson(url, options = {}) {
   const response = await fetch(url, {
     ...options,
-    headers: authHeaders({
-      ...(options.headers || {}),
-    }),
+    headers: authHeaders({ ...(options.headers || {}) }),
   });
-
-  const payload = await response.json();
-
+  const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
+    if (response.status === 401 && state.token) {
+      logout({ silent: true, message: "Your session expired. Please sign in again." });
+    }
     throw new Error(payload.error || "Request failed.");
   }
-
   return payload;
 }
 
 function switchAuthMode(mode) {
-  loginForm.classList.toggle("hidden", mode !== "login");
-  signupForm.classList.toggle("hidden", mode !== "signup");
-  showLogin.classList.toggle("active", mode === "login");
-  showSignup.classList.toggle("active", mode === "signup");
-}
-
-function setAuthenticated(isAuthenticated) {
-  authPanel.classList.toggle("hidden", isAuthenticated);
-  dashboard.classList.toggle("hidden", !isAuthenticated);
+  els.loginForm.classList.toggle("hidden", mode !== "login");
+  els.signupForm.classList.toggle("hidden", mode !== "signup");
+  els.showLogin.classList.toggle("active", mode === "login");
+  els.showSignup.classList.toggle("active", mode === "signup");
 }
 
 function formatDate(value) {
@@ -141,29 +150,27 @@ function formatDate(value) {
 }
 
 function formatDuration(durationMs) {
-  if (!Number.isFinite(durationMs) || durationMs <= 0) {
-    return "--";
-  }
-
-  if (durationMs < 1000) {
-    return `${durationMs} ms`;
-  }
-
-  return `${(durationMs / 1000).toFixed(1)} s`;
+  if (!Number.isFinite(durationMs) || durationMs <= 0) return "--";
+  return durationMs < 1000 ? `${durationMs} ms` : `${(durationMs / 1000).toFixed(1)} s`;
 }
 
 function getSeverityColor(severity) {
   return {
-    critical: "#ff4d67",
-    high: "#ff8a4c",
-    medium: "#e9b44c",
-    low: "#41d19a",
-    info: "#77a8ff",
-  }[severity] || "#77a8ff";
+    critical: "#c7544f",
+    high: "#d07a3a",
+    medium: "#bc9544",
+    low: "#348f6a",
+    info: "#53789b",
+  }[severity] || "#53789b";
+}
+
+function getTopCategory(scan) {
+  const entries = Object.entries(scan?.summary?.byCategory || {}).sort((a, b) => b[1] - a[1]);
+  return entries[0]?.[0] || "--";
 }
 
 function updateDownloadButtons(enabled) {
-  [downloadPdf, downloadTxt, downloadMd, downloadJson, downloadHtml, refreshAi].forEach((button) => {
+  [els.downloadPdf, els.downloadTxt, els.downloadMd, els.downloadJson, els.downloadHtml].forEach((button) => {
     button.disabled = !enabled;
   });
 }
@@ -171,357 +178,262 @@ function updateDownloadButtons(enabled) {
 function renderSeverityChart(bySeverity = {}) {
   const order = ["critical", "high", "medium", "low", "info"];
   const total = Object.values(bySeverity).reduce((sum, count) => sum + count, 0);
-
   if (!total) {
-    severityChart.className = "severity-chart empty";
-    severityChart.style.background = "";
-    severityChart.textContent = "Awaiting scan";
-    severityBreakdown.className = "severity-breakdown empty";
-    severityBreakdown.textContent = "Run a scan to view severity distribution.";
+    els.severityChart.className = "severity-chart empty";
+    els.severityChart.style.background = "";
+    els.severityChart.textContent = "Awaiting scan";
+    els.severityBreakdown.className = "severity-breakdown empty";
+    els.severityBreakdown.textContent = "Run a scan to view severity distribution.";
     return;
   }
 
   let cursor = 0;
-  const slices = order
-    .filter((severity) => bySeverity[severity])
-    .map((severity) => {
-      const slice = (bySeverity[severity] / total) * 100;
-      const segment = `${getSeverityColor(severity)} ${cursor}% ${cursor + slice}%`;
-      cursor += slice;
-      return segment;
-    });
+  const slices = order.filter((severity) => bySeverity[severity]).map((severity) => {
+    const slice = (bySeverity[severity] / total) * 100;
+    const segment = `${getSeverityColor(severity)} ${cursor}% ${cursor + slice}%`;
+    cursor += slice;
+    return segment;
+  });
 
-  severityChart.className = "severity-chart";
-  severityChart.style.background = `conic-gradient(${slices.join(", ")})`;
-  severityChart.innerHTML = `<span><strong>${total}</strong><small>Findings</small></span>`;
-  severityBreakdown.className = "severity-breakdown";
-  severityBreakdown.innerHTML = order
+  els.severityChart.className = "severity-chart";
+  els.severityChart.style.background = `conic-gradient(${slices.join(", ")})`;
+  els.severityChart.innerHTML = `<span><strong>${total}</strong><small>Findings</small></span>`;
+  els.severityBreakdown.className = "severity-breakdown";
+  els.severityBreakdown.innerHTML = order
     .filter((severity) => bySeverity[severity])
-    .map(
-      (severity) =>
-        `<span class="severity-chip ${severity}">${escapeHtml(severity.toUpperCase())}: ${escapeHtml(bySeverity[severity])}</span>`,
-    )
+    .map((severity) => `<span class="severity-chip ${severity}">${escapeHtml(severity)}: ${escapeHtml(bySeverity[severity])}</span>`)
     .join("");
 }
 
 function renderTrendChart(trend = []) {
   if (!trend.length) {
-    riskTrend.className = "risk-trend empty";
-    riskTrend.textContent = "No scan history yet.";
+    els.riskTrend.className = "trend-chart empty";
+    els.riskTrend.textContent = "No scan history yet.";
     return;
   }
 
-  riskTrend.className = "risk-trend";
-  riskTrend.innerHTML = trend
-    .map((point) => {
-      const height = Math.max(14, Math.min(180, Math.round((point.riskScore / 100) * 180)));
-      return `
-        <div class="trend-bar" style="height:${height}px">
-          <span>${escapeHtml(new Date(point.scannedAt).toLocaleDateString())}</span>
-        </div>
-      `;
-    })
-    .join("");
+  els.riskTrend.className = "trend-chart";
+  els.riskTrend.innerHTML = trend.map((point) => {
+    const height = Math.max(22, Math.round((point.riskScore / 100) * 180));
+    return `<div class="trend-bar" style="height:${height}px"><span>${escapeHtml(new Date(point.scannedAt).toLocaleDateString())}</span></div>`;
+  }).join("");
+}
+function renderActivityFeed() {
+  if (!state.scans.length) {
+    els.activityFeed.className = "activity-feed empty";
+    els.activityFeed.textContent = "Recent activity will appear here.";
+    return;
+  }
+
+  els.activityFeed.className = "activity-feed";
+  els.activityFeed.innerHTML = state.scans.slice(0, 5).map((scan) => `
+    <article class="activity-item">
+      <strong>${escapeHtml(new URL(scan.finalUrl || scan.target).hostname)}</strong>
+      <p class="muted-copy">${escapeHtml(scan.summary.total)} findings, risk ${escapeHtml(scan.risk.band)}, scanned ${escapeHtml(formatDate(scan.scannedAt))}</p>
+    </article>
+  `).join("");
 }
 
 function renderHistory() {
-  totalScans.textContent = String(state.metrics.totalScans || state.scans.length);
-  averageRisk.textContent = String(state.metrics.averageRisk || 0);
+  els.totalScans.textContent = String(state.metrics.totalScans || state.scans.length);
+  els.averageRisk.textContent = String(state.metrics.averageRisk || 0);
   renderTrendChart(state.metrics.riskTrend || []);
+  renderActivityFeed();
 
   if (!state.scans.length) {
-    historyList.className = "history-list empty";
-    historyList.textContent = "No scans yet.";
+    els.historyList.className = "history-list empty";
+    els.historyList.textContent = "No scans yet.";
     return;
   }
 
-  historyList.className = "history-list";
-  historyList.innerHTML = state.scans
-    .map((scan) => {
-      const active = state.activeScan?.id === scan.id ? " active" : "";
-      return `
-        <button class="history-item${active}" type="button" data-scan-id="${escapeHtml(scan.id)}">
-          <div class="history-topline">
-            <div>
-              <strong>${escapeHtml(new URL(scan.finalUrl || scan.target).hostname)}</strong>
-              <span class="history-meta">${escapeHtml(formatDate(scan.scannedAt))}</span>
-            </div>
-            <span class="chip ${escapeHtml(scan.risk.band.toLowerCase())}">${escapeHtml(scan.risk.band)}</span>
+  els.historyList.className = "history-list";
+  els.historyList.innerHTML = state.scans.map((scan) => {
+    const active = state.activeScan?.id === scan.id ? " active" : "";
+    return `
+      <button class="history-item${active}" type="button" data-scan-id="${escapeHtml(scan.id)}">
+        <div class="history-topline">
+          <div>
+            <strong>${escapeHtml(new URL(scan.finalUrl || scan.target).hostname)}</strong>
+            <span class="history-meta">${escapeHtml(formatDate(scan.scannedAt))}</span>
           </div>
-          <span class="history-meta">${escapeHtml(scan.summary.total)} findings across ${escapeHtml(scan.coverage.pagesCrawled)} page(s)</span>
-          <span class="history-meta">Duration: ${escapeHtml(formatDuration(scan.durationMs))}</span>
-        </button>
-      `;
-    })
-    .join("");
+          <span class="severity-badge ${escapeHtml(scan.risk.band.toLowerCase())}">${escapeHtml(scan.risk.band)}</span>
+        </div>
+        <span class="history-meta">${escapeHtml(scan.summary.total)} findings across ${escapeHtml(scan.coverage.pagesCrawled)} page(s)</span>
+        <span class="history-meta">Duration ${escapeHtml(formatDuration(scan.durationMs))}</span>
+      </button>
+    `;
+  }).join("");
 }
 
 function renderSummary(scan) {
   if (!scan) {
-  if (riskBand) {
-  riskBand.textContent = "No Data";
-  riskBand.className = "chip neutral";
-}
-
-if (riskScore) {
-  riskScore.textContent = "--";
-}
-
-if (findingTotal) {
-  findingTotal.textContent = "--";
-}
-
-if (pagesCrawled) {
-  pagesCrawled.textContent = "--";
-}
-
-if (scanDuration) {
-  scanDuration.textContent = "--";
-}
+    els.riskBand.textContent = "No data";
+    els.riskBand.className = "pill muted";
+    els.riskScore.textContent = "--";
+    els.findingTotal.textContent = "--";
+    els.pagesCrawled.textContent = "--";
+    els.scanDuration.textContent = "--";
+    els.topCategory.textContent = "--";
     renderSeverityChart({});
     return;
   }
 
-  if (riskBand) {
-  riskBand.textContent = scan.risk.band;
-  riskBand.className = `chip ${scan.risk.band.toLowerCase()}`;
-}
-
-if (riskScore) {
-  riskScore.textContent = `${scan.risk.score}/100`;
-}
-
-if (findingTotal) {
-  findingTotal.textContent = String(scan.summary.total);
-}
-
-if (pagesCrawled) {
-  pagesCrawled.textContent = String(scan.coverage.pagesCrawled);
-}
-
-if (scanDuration) {
-  scanDuration.textContent = formatDuration(scan.durationMs);
-}
-  renderSeverityChart(scan.summary.bySeverity);
+  els.riskBand.textContent = scan.risk.band;
+  els.riskBand.className = `pill ${scan.risk.band.toLowerCase()}`;
+  els.riskScore.textContent = `${scan.risk.score}/100`;
+  els.findingTotal.textContent = String(scan.summary.total);
+  els.pagesCrawled.textContent = String(scan.coverage.pagesCrawled);
+  els.scanDuration.textContent = formatDuration(scan.durationMs);
+  els.topCategory.textContent = getTopCategory(scan);
+  renderSeverityChart(scan.summary.bySeverity || {});
 }
 
 function renderReport(scan) {
   if (!scan) {
-    reportContent.className = "report-content empty";
-    reportContent.textContent = "Run a scan to generate a report.";
+    els.reportContent.className = "report-content empty";
+    els.reportContent.textContent = "Run a scan to generate a summary.";
     return;
   }
 
-  const metadataRows = [
-    ["Target", scan.target],
-    ["Final URL", scan.finalUrl],
-    ["Scanned", formatDate(scan.scannedAt)],
-    ["Duration", formatDuration(scan.durationMs)],
-  ]
-    .map(([label, value]) => `<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(value)}</td></tr>`)
-    .join("");
+  const topFindings = scan.findings.slice(0, 6).map((finding) => `
+    <tr>
+      <td><span class="severity-badge ${escapeHtml(finding.severity)}">${escapeHtml(finding.severity)}</span></td>
+      <td>${escapeHtml(finding.title)}</td>
+      <td>${escapeHtml(finding.confidence || "--")}%</td>
+      <td>${escapeHtml(finding.location || "Global")}</td>
+    </tr>
+  `).join("");
 
-  const findingsRows = scan.findings
-    .slice(0, 8)
-    .map(
-      (finding) => `
-        <tr>
-          <td><span class="severity-badge ${escapeHtml(finding.severity)}">${escapeHtml(finding.severity)}</span></td>
-          <td>${escapeHtml(finding.title)}</td>
-          <td>${escapeHtml(finding.category)}</td>
-          <td>${escapeHtml(finding.location || "Global")}</td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  reportContent.className = "report-content";
-  reportContent.innerHTML = `
+  els.reportContent.className = "report-content";
+  els.reportContent.innerHTML = `
     <article class="report-block">
-      <h3>Executive Summary</h3>
+      <h3>Executive summary</h3>
       <p>${escapeHtml(scan.report.executiveSummary)}</p>
-      <p class="supporting-copy">${escapeHtml(scan.report.threatNarrative)}</p>
     </article>
     <article class="report-block">
-      <h3>Scan Metadata</h3>
+      <h3>Scan snapshot</h3>
       <table class="finding-table">
-        <tbody>${metadataRows}</tbody>
+        <tbody>
+          <tr><th>Target</th><td>${escapeHtml(scan.target)}</td></tr>
+          <tr><th>Final URL</th><td>${escapeHtml(scan.finalUrl)}</td></tr>
+          <tr><th>Scanned</th><td>${escapeHtml(formatDate(scan.scannedAt))}</td></tr>
+          <tr><th>Duration</th><td>${escapeHtml(formatDuration(scan.durationMs))}</td></tr>
+          <tr><th>Pages</th><td>${escapeHtml(scan.coverage.pagesCrawled)}</td></tr>
+        </tbody>
       </table>
     </article>
     <article class="report-block">
-      <h3>Recommendations</h3>
-      <ol>
-        ${(scan.report.priorityActions || [])
-          .map((action) => `<li>${escapeHtml(action.action)} <span class="supporting-copy">${escapeHtml(action.reason)}</span></li>`)
-          .join("")}
-      </ol>
-    </article>
-    <article class="report-block">
-      <h3>Findings Table</h3>
+      <h3>Top findings</h3>
       <table class="finding-table">
-        <thead>
-          <tr>
-            <th>Severity</th>
-            <th>Title</th>
-            <th>Category</th>
-            <th>Location</th>
-          </tr>
-        </thead>
-        <tbody>${findingsRows}</tbody>
+        <thead><tr><th>Severity</th><th>Finding</th><th>Confidence</th><th>Affected</th></tr></thead>
+        <tbody>${topFindings}</tbody>
       </table>
     </article>
   `;
 }
 
-function renderAiContent(aiAssist) {
-  const aiContent = document.getElementById("ai-content");
-
-  if (!aiContent) {
+function renderMemo(scan) {
+  if (!scan) {
+    els.aiContent.className = "memo-content empty";
+    els.aiContent.textContent = "Compact remediation priorities will appear here for the selected scan.";
     return;
   }
 
-  aiContent.className = "report-content";
-  aiContent.innerHTML = `
-    <article class="report-block">
-      <h3>Summary</h3>
-      <p>${escapeHtml(aiAssist.summary)}</p>
-    </article>
-    <article class="report-block">
-      <h3>Remediation Plan</h3>
-      <ol>
-        ${(aiAssist.remediationPlan || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
-      </ol>
-    </article>
-    ${(aiAssist.findingExplanations || [])
-      .map(
-        (item) => `
-          <article class="report-block">
-            <h3>${escapeHtml(item.title)}</h3>
-            <p>${escapeHtml(item.simpleExplanation)}</p>
-            <p class="supporting-copy">${escapeHtml(item.whyItMatters)}</p>
-            <p><strong>Suggested fix:</strong> ${escapeHtml(item.suggestedFix)}</p>
-          </article>
-        `,
-      )
-      .join("")}
+  const actions = (scan.report.priorityActions || []).slice(0, 4).map((action) => `<li>${escapeHtml(action.action)}</li>`).join("");
+  els.aiContent.className = "memo-content";
+  els.aiContent.innerHTML = `
+    <p>${escapeHtml(scan.aiAssist?.summary || scan.report.threatNarrative || scan.report.executiveSummary)}</p>
+    <ol>${actions}</ol>
   `;
 }
 
 function renderCoverage(scan) {
   if (!scan) {
-    coverageContent.className = "coverage-content empty";
-    coverageContent.textContent = "No coverage data yet.";
+    els.coverageContent.className = "coverage-content empty";
+    els.coverageContent.textContent = "No coverage data yet.";
     return;
   }
 
-  coverageContent.className = "coverage-content";
-  coverageContent.innerHTML = `
-    <article class="report-block">
-      <h3>Inventory</h3>
-      <div class="inventory-grid">
-        <div class="inventory-card">
-          <span>Forms</span>
-          <strong>${escapeHtml(scan.inventory.totalForms)}</strong>
-        </div>
-        <div class="inventory-card">
-          <span>Password Surfaces</span>
-          <strong>${escapeHtml(scan.inventory.totalPasswordForms)}</strong>
-        </div>
-        <div class="inventory-card">
-          <span>Script Hosts</span>
-          <strong>${escapeHtml(scan.inventory.externalScriptHosts.length)}</strong>
-        </div>
-      </div>
-      <div class="pill-row">
-        ${(scan.inventory.externalScriptHosts || []).length
-          ? scan.inventory.externalScriptHosts.map((host) => `<span class="meta-pill">${escapeHtml(host)}</span>`).join("")
-          : '<span class="meta-pill">No external script hosts detected</span>'}
-      </div>
-    </article>
+  els.coverageContent.className = "coverage-content";
+  els.coverageContent.innerHTML = `
+    <div class="inventory-grid">
+      <article class="page-card"><h3>Forms</h3><p>${escapeHtml(scan.inventory.totalForms)}</p></article>
+      <article class="page-card"><h3>Password surfaces</h3><p>${escapeHtml(scan.inventory.totalPasswordForms)}</p></article>
+      <article class="page-card"><h3>Script hosts</h3><p>${escapeHtml(scan.inventory.externalScriptHosts.length)}</p></article>
+    </div>
     <div class="pages-grid">
-      ${scan.coverage.pages
-        .map(
-          (page) => `
-            <article class="page-card">
-              <div class="page-topline">
-                <h3>${escapeHtml(page.title)}</h3>
-                <span class="meta-pill">HTTP ${escapeHtml(page.status)}</span>
-              </div>
-              <p class="page-url">${escapeHtml(page.url)}</p>
-              <div class="page-stats">
-                <span class="meta-pill">Forms ${escapeHtml(page.formsCount)}</span>
-                <span class="meta-pill">Password ${escapeHtml(page.passwordForms)}</span>
-                <span class="meta-pill">Inline Scripts ${escapeHtml(page.inlineScriptCount)}</span>
-                <span class="meta-pill">Internal Links ${escapeHtml(page.internalLinks)}</span>
-              </div>
-            </article>
-          `,
-        )
-        .join("")}
+      ${scan.coverage.pages.map((page) => `
+        <article class="page-card">
+          <div class="page-topline">
+            <h3>${escapeHtml(page.title)}</h3>
+            <span class="meta-pill">HTTP ${escapeHtml(page.status)}</span>
+          </div>
+          <p class="page-url">${escapeHtml(page.url)}</p>
+          <div class="page-stats">
+            <span class="meta-pill">Forms ${escapeHtml(page.formsCount)}</span>
+            <span class="meta-pill">Password ${escapeHtml(page.passwordForms)}</span>
+            <span class="meta-pill">Inline scripts ${escapeHtml(page.inlineScriptCount)}</span>
+            <span class="meta-pill">Links ${escapeHtml(page.internalLinks)}</span>
+          </div>
+        </article>
+      `).join("")}
     </div>
   `;
 }
 
 function getFilteredFindings() {
-  if (!state.activeScan) {
-    return [];
-  }
-
+  if (!state.activeScan) return [];
   return state.activeScan.findings.filter((finding) => {
     const severityMatch = state.filters.severity === "all" || finding.severity === state.filters.severity;
     const categoryMatch = state.filters.category === "all" || finding.category === state.filters.category;
     const query = state.filters.query.toLowerCase();
     const haystack = `${finding.title} ${finding.description} ${finding.evidence} ${finding.location || ""}`.toLowerCase();
-    const queryMatch = !query || haystack.includes(query);
-    return severityMatch && categoryMatch && queryMatch;
+    return severityMatch && categoryMatch && (!query || haystack.includes(query));
   });
 }
 
 function renderFindings() {
   if (!state.activeScan) {
-    findingsList.className = "findings-list empty";
-    findingsList.textContent = "No findings to display yet.";
-    filterResults.textContent = "Showing 0 findings.";
+    els.findingsList.className = "findings-list empty";
+    els.findingsList.textContent = "No findings to display yet.";
+    els.filterResults.textContent = "Showing 0 findings.";
     return;
   }
 
   const filtered = getFilteredFindings();
-  filterResults.textContent = `Showing ${filtered.length} of ${state.activeScan.findings.length} findings.`;
+  els.filterResults.textContent = `Showing ${filtered.length} of ${state.activeScan.findings.length} findings.`;
 
   if (!filtered.length) {
-    findingsList.className = "findings-list empty";
-    findingsList.textContent = "No findings match the selected filters.";
+    els.findingsList.className = "findings-list empty";
+    els.findingsList.textContent = "No findings match the selected filters.";
     return;
   }
 
-  findingsList.className = "findings-list";
-  findingsList.innerHTML = filtered
-    .map(
-      (finding) => `
-        <article class="finding-card">
-          <div class="finding-topline">
-            <h3>${escapeHtml(finding.title)}</h3>
-            <span class="severity-badge ${escapeHtml(finding.severity)}">${escapeHtml(finding.severity)}</span>
-          </div>
-          <div class="finding-meta">
-            <span class="meta-pill">${escapeHtml(finding.category)}</span>
-            <span class="meta-pill">${escapeHtml(finding.location || "Global")}</span>
-          </div>
-          <div class="finding-sections">
-            <p><strong>Description:</strong> ${escapeHtml(finding.description)}</p>
-            <p><strong>Impact:</strong> ${escapeHtml(finding.impact)}</p>
-            <p><strong>Recommendation:</strong> ${escapeHtml(finding.remediation)}</p>
-            <p><strong>Evidence:</strong> ${escapeHtml(finding.evidence)}</p>
-          </div>
-        </article>
-      `,
-    )
-    .join("");
+  els.findingsList.className = "findings-list";
+  els.findingsList.innerHTML = filtered.map((finding) => `
+    <article class="finding-card">
+      <div class="finding-topline">
+        <h3>${escapeHtml(finding.title)}</h3>
+        <span class="severity-badge ${escapeHtml(finding.severity)}">${escapeHtml(finding.severity)}</span>
+      </div>
+      <div class="finding-meta">
+        <span class="meta-pill">${escapeHtml(finding.category)}</span>
+        <span class="meta-pill">Confidence ${escapeHtml(finding.confidence || "--")}%</span>
+        <span class="meta-pill">${escapeHtml(finding.location || "Global")}</span>
+      </div>
+      <div class="finding-sections">
+        <p><strong>Description:</strong> ${escapeHtml(finding.description)}</p>
+        <p><strong>Impact:</strong> ${escapeHtml(finding.impact)}</p>
+        <p><strong>Remediation:</strong> ${escapeHtml(finding.remediation)}</p>
+        <p><strong>Evidence:</strong> ${escapeHtml(finding.evidence)}</p>
+      </div>
+    </article>
+  `).join("");
 }
 
 function renderCategoryFilter(scan) {
   const categories = scan ? Object.keys(scan.summary.byCategory || {}).sort() : [];
-  categoryFilter.innerHTML = `
+  els.categoryFilter.innerHTML = `
     <option value="all">All categories</option>
     ${categories.map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join("")}
   `;
@@ -531,35 +443,24 @@ function updateDashboard(scan) {
   state.activeScan = scan;
   renderSummary(scan);
   renderReport(scan);
+  renderMemo(scan);
   renderCoverage(scan);
-  renderAiContent(scan?.aiAssist || null);
   renderCategoryFilter(scan);
   renderFindings();
   updateDownloadButtons(Boolean(scan));
   renderHistory();
 }
-
 async function loadHealth() {
   const payload = await fetchJson("/api/health");
-  storageMode.textContent = payload.storageMode;
+  els.storageMode.textContent = payload.storageMode || "Storage";
 }
 
-async function loadMe() {
-  if (!state.token) {
-    setAuthenticated(false);
-    return;
-  }
-
-  try {
-    const payload = await fetchJson("/api/auth/me");
-    state.user = payload.user;
-    userGreeting.textContent = `Welcome, ${payload.user.name}`;
-    setAuthenticated(true);
-    await Promise.all([loadHealth(), loadScans()]);
-  } catch {
-    setToken("");
-    state.user = null;
-    setAuthenticated(false);
+async function loadAuthConfig() {
+  const payload = await fetchJson("/api/auth/config");
+  state.authConfig = payload;
+  if (payload.googleEnabled && payload.googleClientId) {
+    els.googleAuthWrapper.classList.remove("hidden");
+    initializeGoogleAuth(payload.googleClientId);
   }
 }
 
@@ -568,7 +469,6 @@ async function loadScans() {
   state.scans = payload.scans || [];
   state.metrics = payload.metrics || state.metrics;
   renderHistory();
-
   if (state.scans.length && !state.activeScan) {
     await loadScan(state.scans[0].id, false);
   }
@@ -577,15 +477,47 @@ async function loadScans() {
 async function loadScan(scanId, announce = true) {
   const scan = await fetchJson(`/api/scans/${encodeURIComponent(scanId)}`);
   updateDashboard(scan);
-
   if (announce) {
     setStatus("success", `Loaded saved scan for ${scan.finalUrl}.`);
   }
 }
 
-async function loadAiAssist(scanId) {
-  const payload = await fetchJson(`/api/scans/${encodeURIComponent(scanId)}/ai`);
-  renderAiContent(payload.aiAssist);
+function logout({ silent = false, message = "Signed out. Login to continue." } = {}) {
+  setToken("");
+  state.user = null;
+  state.scans = [];
+  state.activeScan = null;
+  state.metrics = { totalScans: 0, averageRisk: 0, riskTrend: [] };
+  setAuthenticated(false);
+  updateDashboard(null);
+  if (!silent) setStatus("idle", message);
+}
+
+async function restoreSession() {
+  if (!state.token) {
+    setAuthenticated(false);
+    return;
+  }
+
+  try {
+    const payload = await fetchJson("/api/auth/me");
+    state.user = payload.user;
+    els.userGreeting.textContent = `Welcome, ${payload.user.name}`;
+    setAuthenticated(true);
+    await Promise.all([loadHealth(), loadScans()]);
+  } catch {
+    logout({ silent: false, message: "Your session could not be restored. Please sign in again." });
+  }
+}
+
+async function handleAuthSuccess(payload, message) {
+  setToken(payload.token, "local");
+  state.user = payload.user;
+  els.userGreeting.textContent = `Welcome, ${payload.user.name}`;
+  setAuthenticated(true);
+  setAuthMessage(message, "success");
+  await Promise.all([loadHealth(), loadScans()]);
+  setStatus("success", "Workspace restored and ready.");
 }
 
 function downloadBlob(blob, filename) {
@@ -598,131 +530,110 @@ function downloadBlob(blob, filename) {
 }
 
 async function downloadReport(format) {
-  if (!state.activeScan) {
-    return;
-  }
-
+  if (!state.activeScan) return;
   const response = await fetch(`/api/reports/${encodeURIComponent(state.activeScan.id)}/${format}`, {
     headers: authHeaders(),
   });
-
   if (!response.ok) {
-    const payload = await response.json();
+    const payload = await response.json().catch(() => ({}));
     throw new Error(payload.error || "Unable to export report.");
   }
-
   const blob = await response.blob();
   const disposition = response.headers.get("Content-Disposition") || "";
-  const filenameMatch = disposition.match(/filename="(.+)"/);
-  const filename = filenameMatch ? filenameMatch[1] : `sentinel-scan-report.${format}`;
+  const filename = disposition.match(/filename="(.+)"/)?.[1] || `sentinel-scan-report.${format}`;
   downloadBlob(blob, filename);
 }
 
 function buildHtmlSnapshot(scan) {
-  return `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Sentinel Scan HTML Snapshot</title>
-    <style>
-      body { font-family: Arial, sans-serif; margin: 32px; line-height: 1.6; color: #10223c; }
-      .card { border: 1px solid #dbe5f0; border-radius: 14px; padding: 16px; margin-bottom: 16px; }
-    </style>
-  </head>
-  <body>
-    <h1>Sentinel Scan Report Snapshot</h1>
-    <p><strong>Target:</strong> ${escapeHtml(scan.target)}</p>
-    <p><strong>Risk:</strong> ${escapeHtml(scan.risk.score)}/100 (${escapeHtml(scan.risk.band)})</p>
-    <p><strong>Scanned:</strong> ${escapeHtml(formatDate(scan.scannedAt))}</p>
-    <div class="card">
-      <h2>Executive Summary</h2>
-      <p>${escapeHtml(scan.report.executiveSummary)}</p>
-    </div>
-    ${scan.findings
-      .map(
-        (finding) => `
-          <div class="card">
-            <h3>${escapeHtml(finding.title)}</h3>
-            <p><strong>Severity:</strong> ${escapeHtml(finding.severity)}</p>
-            <p><strong>Description:</strong> ${escapeHtml(finding.description)}</p>
-            <p><strong>Recommendation:</strong> ${escapeHtml(finding.remediation)}</p>
-          </div>
-        `,
-      )
-      .join("")}
-  </body>
-</html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8" /><title>Sentinel Scan Snapshot</title><style>body{font-family:Arial,sans-serif;margin:32px;color:#1f2933}h1,h2,h3{margin:0 0 10px}.card{border:1px solid #d9e1e8;border-radius:14px;padding:18px;margin-bottom:14px}</style></head><body><h1>Sentinel Scan Snapshot</h1><p><strong>Target:</strong> ${escapeHtml(scan.target)}</p><p><strong>Risk:</strong> ${escapeHtml(scan.risk.score)}/100 (${escapeHtml(scan.risk.band)})</p><p><strong>Scanned:</strong> ${escapeHtml(formatDate(scan.scannedAt))}</p><div class="card"><h2>Summary</h2><p>${escapeHtml(scan.report.executiveSummary)}</p></div>${scan.findings.slice(0,10).map((finding)=>`<div class="card"><h3>${escapeHtml(finding.title)}</h3><p><strong>Severity:</strong> ${escapeHtml(finding.severity)}</p><p><strong>Confidence:</strong> ${escapeHtml(finding.confidence || "--")}%</p><p><strong>Evidence:</strong> ${escapeHtml(finding.evidence)}</p><p><strong>Remediation:</strong> ${escapeHtml(finding.remediation)}</p></div>`).join("")}</body></html>`;
 }
 
-showLogin.addEventListener("click", () => switchAuthMode("login"));
-showSignup.addEventListener("click", () => switchAuthMode("signup"));
-themeToggle.addEventListener("click", toggleTheme);
+function initializeGoogleAuth(clientId) {
+  if (!window.google?.accounts?.id || !clientId || els.googleSigninButton.dataset.ready === "true") return;
+  window.google.accounts.id.initialize({
+    client_id: clientId,
+    callback: async ({ credential }) => {
+      try {
+        setAuthMessage("Verifying Google sign-in...", "info");
+        const payload = await fetchJson("/api/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken: credential }),
+        });
+        await handleAuthSuccess(payload, "Google sign-in successful.");
+      } catch (error) {
+        setAuthMessage(error.message || "Google sign-in failed.", "error");
+      }
+    },
+  });
+  window.google.accounts.id.renderButton(els.googleSigninButton, {
+    theme: document.body.dataset.theme === "dark" ? "filled_black" : "outline",
+    size: "large",
+    width: "320",
+    text: "continue_with",
+    shape: "pill",
+  });
+  els.googleSigninButton.dataset.ready = "true";
+}
 
-logoutButton.addEventListener("click", () => {
-  setToken("");
-  state.user = null;
-  state.scans = [];
-  state.metrics = { totalScans: 0, averageRisk: 0, riskTrend: [] };
-  state.activeScan = null;
-  updateDashboard(null);
-  setAuthenticated(false);
-  setStatus("idle", "Signed out. Login to continue.");
+els.showLogin.addEventListener("click", () => switchAuthMode("login"));
+els.showSignup.addEventListener("click", () => switchAuthMode("signup"));
+els.themeToggle.addEventListener("click", () => {
+  setTheme(document.body.dataset.theme === "dark" ? "light" : "dark");
 });
+els.logoutButton.addEventListener("click", () => logout());
 
-loginForm.addEventListener("submit", async (event) => {
+els.loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-
   try {
-    setAuthMessage("Logging in...", "info");
+    setAuthMessage("Signing in...", "info");
     const payload = await fetchJson("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(Object.fromEntries(new FormData(loginForm))),
+      body: JSON.stringify(Object.fromEntries(new FormData(els.loginForm))),
     });
-    setToken(payload.token);
-    state.user = payload.user;
-    userGreeting.textContent = `Welcome, ${payload.user.name}`;
-    setAuthenticated(true);
-    setAuthMessage("Login successful.", "success");
-    await Promise.all([loadHealth(), loadScans()]);
+    await handleAuthSuccess(payload, "Login successful.");
   } catch (error) {
     setAuthMessage(error.message || "Unable to login.", "error");
   }
 });
 
-signupForm.addEventListener("submit", async (event) => {
+els.signupForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-
   try {
     setAuthMessage("Creating account...", "info");
     const payload = await fetchJson("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(Object.fromEntries(new FormData(signupForm))),
+      body: JSON.stringify(Object.fromEntries(new FormData(els.signupForm))),
     });
-    setToken(payload.token);
-    state.user = payload.user;
-    userGreeting.textContent = `Welcome, ${payload.user.name}`;
-    setAuthenticated(true);
-    setAuthMessage("Account created successfully.", "success");
-    await Promise.all([loadHealth(), loadScans()]);
+    await handleAuthSuccess(payload, "Account created successfully.");
   } catch (error) {
     setAuthMessage(error.message || "Unable to create account.", "error");
   }
 });
-
-form.addEventListener("submit", async (event) => {
+els.form.addEventListener("submit", async (event) => {
   event.preventDefault();
-
-  const url = String(new FormData(form).get("url") || "").trim();
-
+  const url = String(new FormData(els.form).get("url") || "").trim();
   if (!url) {
     setStatus("error", "Enter a target URL before starting the scan.");
     return;
   }
 
-  scanButton.disabled = true;
-  setStatus("loading", "Running a passive scan and collecting same-origin coverage.");
+  els.scanButton.disabled = true;
+  setLoadingSkeleton(true);
+  const progressMessages = [
+    "Validating target and starting passive scan.",
+    "Collecting transport and response posture.",
+    "Crawling same-origin pages and inventorying assets.",
+    "Scoring findings and preparing the report.",
+  ];
+  let step = 0;
+  setStatus("loading", progressMessages[step]);
+  const progressTimer = setInterval(() => {
+    step = Math.min(progressMessages.length - 1, step + 1);
+    setStatus("loading", progressMessages[step]);
+  }, 1800);
 
   try {
     const payload = await fetchJson("/api/scans", {
@@ -731,8 +642,8 @@ form.addEventListener("submit", async (event) => {
       body: JSON.stringify({
         url,
         options: {
-          includeSubpages: includeSubpages.checked,
-          maxPages: Number(maxPages.value),
+          includeSubpages: els.includeSubpages.checked,
+          maxPages: Number(els.maxPages.value),
         },
       }),
     });
@@ -752,100 +663,76 @@ form.addEventListener("submit", async (event) => {
     ];
 
     state.metrics.totalScans = state.scans.length;
-    state.metrics.averageRisk =
-      state.scans.length > 0
-        ? Math.round(state.scans.reduce((sum, scan) => sum + (scan.risk?.score || 0), 0) / state.scans.length)
-        : 0;
-    state.metrics.riskTrend = [
-      ...state.scans.slice(0, 10).map((scan) => ({
-        scannedAt: scan.scannedAt,
-        riskScore: scan.risk.score,
-        findings: scan.summary.total,
-      })),
-    ].reverse();
+    state.metrics.averageRisk = state.scans.length
+      ? Math.round(state.scans.reduce((sum, scan) => sum + (scan.risk?.score || 0), 0) / state.scans.length)
+      : 0;
+    state.metrics.riskTrend = state.scans.slice(0, 10).map((scan) => ({
+      scannedAt: scan.scannedAt,
+      riskScore: scan.risk.score,
+      findings: scan.summary.total,
+    })).reverse();
 
     updateDashboard(payload);
-    setStatus("success", `Scan complete for ${payload.finalUrl}. Review findings and export the report.`);
+    setStatus("success", `Scan complete for ${payload.finalUrl}.`);
   } catch (error) {
     setStatus("error", error.message || "Scan failed.");
   } finally {
-    scanButton.disabled = false;
+    clearInterval(progressTimer);
+    setLoadingSkeleton(false);
+    els.scanButton.disabled = false;
   }
 });
 
-historyList.addEventListener("click", async (event) => {
+els.historyList.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-scan-id]");
-
-  if (!button) {
-    return;
-  }
-
+  if (!button) return;
   try {
     setStatus("loading", "Loading saved scan.");
+    setLoadingSkeleton(true);
     await loadScan(button.dataset.scanId);
   } catch (error) {
     setStatus("error", error.message || "Unable to load the selected scan.");
+  } finally {
+    setLoadingSkeleton(false);
   }
 });
 
-refreshAi.addEventListener("click", async () => {
-  if (!state.activeScan) {
-    return;
-  }
-
-  try {
-    setStatus("loading", "Refreshing AI explanations.");
-    await loadAiAssist(state.activeScan.id);
-    setStatus("success", "AI explanations refreshed.");
-  } catch (error) {
-    setStatus("error", error.message || "Unable to load AI explanations.");
-  }
+els.severityFilter.addEventListener("change", () => {
+  state.filters.severity = els.severityFilter.value;
+  renderFindings();
 });
-
-severityFilter.addEventListener("change", () => {
-  state.filters.severity = severityFilter.value;
+els.categoryFilter.addEventListener("change", () => {
+  state.filters.category = els.categoryFilter.value;
+  renderFindings();
+});
+els.searchFilter.addEventListener("input", () => {
+  state.filters.query = els.searchFilter.value.trim();
   renderFindings();
 });
 
-categoryFilter.addEventListener("change", () => {
-  state.filters.category = categoryFilter.value;
-  renderFindings();
-});
-
-searchFilter.addEventListener("input", () => {
-  state.filters.query = searchFilter.value.trim();
-  renderFindings();
-});
-
-downloadPdf.addEventListener("click", () => downloadReport("pdf").catch((error) => setStatus("error", error.message)));
-downloadTxt.addEventListener("click", () => downloadReport("txt").catch((error) => setStatus("error", error.message)));
-downloadMd.addEventListener("click", () => downloadReport("md").catch((error) => setStatus("error", error.message)));
-downloadJson.addEventListener("click", () => downloadReport("json").catch((error) => setStatus("error", error.message)));
-downloadHtml.addEventListener("click", () => {
-  if (!state.activeScan) {
-    return;
-  }
-
-  const blob = new Blob([buildHtmlSnapshot(state.activeScan)], { type: "text/html" });
-  downloadBlob(blob, "sentinel-scan-snapshot.html");
+els.downloadPdf.addEventListener("click", () => downloadReport("pdf").catch((error) => setStatus("error", error.message)));
+els.downloadTxt.addEventListener("click", () => downloadReport("txt").catch((error) => setStatus("error", error.message)));
+els.downloadMd.addEventListener("click", () => downloadReport("md").catch((error) => setStatus("error", error.message)));
+els.downloadJson.addEventListener("click", () => downloadReport("json").catch((error) => setStatus("error", error.message)));
+els.downloadHtml.addEventListener("click", () => {
+  if (!state.activeScan) return;
+  downloadBlob(new Blob([buildHtmlSnapshot(state.activeScan)], { type: "text/html" }), "sentinel-scan-snapshot.html");
 });
 
 const savedTheme = localStorage.getItem("sentinelTheme");
-if (savedTheme) {
-  setTheme(savedTheme);
-}
-
-statusSpinner.hidden = true;
+if (savedTheme) setTheme(savedTheme);
+els.statusSpinner.hidden = true;
 setAuthenticated(false);
 updateDownloadButtons(false);
 switchAuthMode("login");
 renderSummary(null);
 renderHistory();
 renderReport(null);
-renderAiContent(null);
+renderMemo(null);
 renderCoverage(null);
 renderFindings();
+setLoadingSkeleton(false);
 
-loadMe().catch(() => {
+Promise.all([loadAuthConfig(), restoreSession()]).catch(() => {
   setAuthenticated(false);
 });

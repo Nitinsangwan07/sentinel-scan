@@ -4,279 +4,302 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Sentinel Scan</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/styles.css" />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
-  <body data-theme="dark">
-    <div class="page-shell">
-      <header class="hero">
-        <div class="hero-copy">
-          <p class="eyebrow">Ethical Passive Security Reviews</p>
-          <h1>Sentinel Scan</h1>
-          <p class="hero-text">
-            A professional passive web security dashboard for authorized sites. Inspect headers,
-            TLS, content flows, third-party assets, and remediation guidance without crossing into
-            exploitative behavior.
-          </p>
-          <div class="hero-actions">
-            <button id="theme-toggle" type="button" class="secondary-button">Toggle Theme</button>
-            <span class="hero-badge">Passive only</span>
-            <span class="hero-badge">Authorized targets only</span>
+  <body data-theme="light">
+    <div class="app-shell">
+      <header class="site-header">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span>
+          </div>
+          <div>
+            <p class="eyebrow">Passive Security Review</p>
+            <h1>Sentinel Scan</h1>
           </div>
         </div>
-
-        <section id="auth-panel" class="hero-card auth-card">
-          <div class="panel-heading compact">
-            <div>
-              <p class="section-label">Access</p>
-              <h2>Secure Workspace</h2>
-            </div>
-          </div>
-
-          <div class="auth-tabs">
-            <button id="show-login" class="auth-tab active" type="button">Login</button>
-            <button id="show-signup" class="auth-tab" type="button">Sign Up</button>
-          </div>
-
-          <form id="login-form" class="auth-form">
-            <label for="login-email">Email</label>
-            <input id="login-email" name="email" type="email" placeholder="security@example.com" required />
-            <label for="login-password">Password</label>
-            <input id="login-password" name="password" type="password" placeholder="Enter password" required />
-            <button type="submit">Login</button>
-          </form>
-
-          <form id="signup-form" class="auth-form hidden">
-            <label for="signup-name">Name</label>
-            <input id="signup-name" name="name" type="text" placeholder="Security Engineer" required />
-            <label for="signup-email">Email</label>
-            <input id="signup-email" name="email" type="email" placeholder="security@example.com" required />
-            <label for="signup-password">Password</label>
-            <input id="signup-password" name="password" type="password" placeholder="Create password" required />
-            <button type="submit">Create Account</button>
-          </form>
-
-          <p id="auth-message" class="helper-text">Sign in to manage user-specific scans and exports.</p>
-        </section>
+        <div class="header-actions">
+          <p class="header-note">Authorized websites only. Findings are heuristic and should be manually validated.</p>
+          <button id="theme-toggle" type="button" class="ghost-button">Theme</button>
+        </div>
       </header>
 
-      <main id="dashboard" class="dashboard hidden">
-        <section class="panel topbar-panel">
-          <div class="panel-heading compact">
-            <div>
-              <p class="section-label">Operator</p>
-              <h2 id="user-greeting">Welcome</h2>
-            </div>
-            <div class="topbar-actions">
-              <span id="storage-mode" class="chip">Storage</span>
-              <button id="logout-button" type="button" class="secondary-button">Logout</button>
-            </div>
+      <main class="workspace">
+        <section class="intro-panel panel">
+          <div>
+            <p class="section-label">Security Operations</p>
+            <h2>Compact passive assessment workspace for modern web teams.</h2>
+            <p class="support-copy">
+              Inspect transport posture, browser policy, public exposure patterns, third-party dependencies,
+              and same-origin content risk without intrusive testing.
+            </p>
           </div>
-          <div id="status-banner" class="status-banner idle">
-            <span id="status-spinner" class="spinner" aria-hidden="true"></span>
-            <span id="status-text">Ready for a passive scan.</span>
-          </div>
-        </section>
-
-        <section class="panel control-panel">
-          <div class="panel-heading">
-            <div>
-              <p class="section-label">Run A Scan</p>
-              <h2>Target Intake</h2>
-            </div>
-            <span class="chip danger">Ethical mode</span>
-          </div>
-
-          <form id="scan-form" class="scan-form">
-            <label for="target-url">Authorized website URL</label>
-            <div class="input-row">
-              <input id="target-url" name="url" type="url" placeholder="https://example.com" required />
-              <button id="scan-button" type="submit">Analyze</button>
-            </div>
-
-            <div class="form-grid">
-              <label class="toggle-field">
-                <input id="include-subpages" name="includeSubpages" type="checkbox" checked />
-                <span>Crawl same-origin subpages</span>
-              </label>
-
-              <label class="select-field" for="max-pages">
-                <span>Page limit</span>
-                <select id="max-pages" name="maxPages">
-                  <option value="2">2 pages</option>
-                  <option value="3" selected>3 pages</option>
-                  <option value="4">4 pages</option>
-                  <option value="5">5 pages</option>
-                  <option value="6">6 pages</option>
-                </select>
-              </label>
-            </div>
-
-            <label class="toggle-field consent-field">
-              <input id="authorized-consent" type="checkbox" required />
-              <span>I confirm I am authorized to assess this website.</span>
-            </label>
-          </form>
-        </section>
-
-        <section class="panel metrics-panel">
-          <div class="panel-heading">
-            <div>
-              <p class="section-label">Scan Metrics</p>
-              <h2>Program Overview</h2>
-            </div>
-          </div>
-
-          <div class="scoreboard">
-            <article class="score-card accent">
-              <span>Total Scans</span>
-              <strong id="total-scans">0</strong>
-            </article>
-            <article class="score-card">
-              <span>Average Risk</span>
-              <strong id="average-risk">0</strong>
-            </article>
-            <article class="score-card">
-              <span>Current Risk</span>
-              <strong id="risk-score">--</strong>
-            </article>
-            <article class="score-card">
-              <span>Duration</span>
-              <strong id="scan-duration">--</strong>
-            </article>
-            <article class="score-card">
-              <span>Pages Crawled</span>
-              <strong id="pages-crawled">--</strong>
-            </article>
-            <article class="score-card">
-              <span>Total Findings</span>
-              <strong id="finding-total">--</strong>
-            </article>
+          <div class="intro-pills">
+            <span class="pill">Passive only</span>
+            <span class="pill">MongoDB ready</span>
+            <span class="pill">JWT sessions</span>
           </div>
         </section>
 
-        <section class="panel visual-panel">
-          <div class="panel-heading">
-            <div>
-              <p class="section-label">Visuals</p>
-              <h2>Severity And Trend</h2>
+        <section id="auth-panel" class="auth-layout">
+          <article class="panel auth-card">
+            <div class="panel-heading compact">
+              <div>
+                <p class="section-label">Access</p>
+                <h2>Sign in</h2>
+              </div>
+              <div class="auth-tabs">
+                <button id="show-login" class="auth-tab active" type="button">Login</button>
+                <button id="show-signup" class="auth-tab" type="button">Sign up</button>
+              </div>
             </div>
-            <span id="risk-band" class="chip neutral">No Data</span>
-          </div>
 
-          <div class="visual-grid">
-            <article class="report-block">
-              <h3>Severity Breakdown</h3>
-              <div class="severity-visuals">
+            <form id="login-form" class="auth-form">
+              <label for="login-email">Email</label>
+              <input id="login-email" name="email" type="email" autocomplete="email" placeholder="security@example.com" required />
+              <label for="login-password">Password</label>
+              <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Enter password" required />
+              <button type="submit">Continue</button>
+            </form>
+
+            <form id="signup-form" class="auth-form hidden">
+              <label for="signup-name">Name</label>
+              <input id="signup-name" name="name" type="text" autocomplete="name" placeholder="Security Engineer" required />
+              <label for="signup-email">Email</label>
+              <input id="signup-email" name="email" type="email" autocomplete="email" placeholder="security@example.com" required />
+              <label for="signup-password">Password</label>
+              <input id="signup-password" name="password" type="password" autocomplete="new-password" placeholder="At least 8 characters" required />
+              <button type="submit">Create account</button>
+            </form>
+
+            <div class="auth-divider"><span>or</span></div>
+            <div id="google-auth-wrapper" class="google-auth-wrapper hidden">
+              <div id="google-signin-button"></div>
+            </div>
+            <p id="auth-message" class="helper-text">Sign in to keep scan history, reports, and analytics tied to your account.</p>
+          </article>
+
+          <article class="panel auth-sidecard">
+            <p class="section-label">What you get</p>
+            <div class="mini-grid">
+              <div class="mini-card">
+                <strong>Stable sessions</strong>
+                <span>Refresh-safe JWT restoration with graceful expiry handling.</span>
+              </div>
+              <div class="mini-card">
+                <strong>Higher-signal findings</strong>
+                <span>Passive checks tuned for realistic posture and exposure issues.</span>
+              </div>
+              <div class="mini-card">
+                <strong>Report exports</strong>
+                <span>PDF, TXT, Markdown, JSON, plus compact dashboard summaries.</span>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section id="dashboard" class="dashboard hidden">
+          <section class="panel topbar-panel">
+            <div class="topbar-row">
+              <div>
+                <p class="section-label">Workspace</p>
+                <h2 id="user-greeting">Welcome</h2>
+              </div>
+              <div class="topbar-actions">
+                <span id="storage-mode" class="pill muted">Storage</span>
+                <button id="logout-button" type="button" class="ghost-button">Logout</button>
+              </div>
+            </div>
+            <div id="status-banner" class="status-banner idle">
+              <span id="status-spinner" class="spinner" aria-hidden="true"></span>
+              <span id="status-text">Ready for a passive scan.</span>
+            </div>
+          </section>
+
+          <section class="dashboard-grid">
+            <article class="panel scan-panel">
+              <div class="panel-heading compact">
+                <div>
+                  <p class="section-label">Run scan</p>
+                  <h2>Target intake</h2>
+                </div>
+                <span class="pill danger">Authorized only</span>
+              </div>
+              <form id="scan-form" class="scan-form">
+                <label for="target-url">Authorized website URL</label>
+                <div class="input-row">
+                  <input id="target-url" name="url" type="url" placeholder="https://example.com" required />
+                  <button id="scan-button" type="submit">Analyze</button>
+                </div>
+                <div class="form-grid compact-grid">
+                  <label class="toggle-field">
+                    <input id="include-subpages" name="includeSubpages" type="checkbox" checked />
+                    <span>Same-origin crawl</span>
+                  </label>
+                  <label class="select-field" for="max-pages">
+                    <span>Page limit</span>
+                    <select id="max-pages" name="maxPages">
+                      <option value="4">4 pages</option>
+                      <option value="6" selected>6 pages</option>
+                      <option value="8">8 pages</option>
+                      <option value="10">10 pages</option>
+                    </select>
+                  </label>
+                </div>
+                <label class="toggle-field consent-field">
+                  <input id="authorized-consent" type="checkbox" required />
+                  <span>I confirm I am authorized to review this website.</span>
+                </label>
+              </form>
+            </article>
+
+            <article class="panel history-panel">
+              <div class="panel-heading compact">
+                <div>
+                  <p class="section-label">History</p>
+                  <h2>Recent scans</h2>
+                </div>
+              </div>
+              <div id="history-list" class="history-list empty">No scans yet.</div>
+            </article>
+          </section>
+
+          <section class="stats-grid">
+            <article class="stat-card accent"><span>Total scans</span><strong id="total-scans">0</strong></article>
+            <article class="stat-card"><span>Average risk</span><strong id="average-risk">0</strong></article>
+            <article class="stat-card"><span>Current risk</span><strong id="risk-score">--</strong></article>
+            <article class="stat-card"><span>Risk band</span><strong id="risk-band">No data</strong></article>
+            <article class="stat-card"><span>Duration</span><strong id="scan-duration">--</strong></article>
+            <article class="stat-card"><span>Pages crawled</span><strong id="pages-crawled">--</strong></article>
+            <article class="stat-card"><span>Findings</span><strong id="finding-total">--</strong></article>
+            <article class="stat-card"><span>Top category</span><strong id="top-category">--</strong></article>
+          </section>
+
+          <section class="dashboard-grid analytics-grid">
+            <article class="panel analytics-panel">
+              <div class="panel-heading compact">
+                <div>
+                  <p class="section-label">Analytics</p>
+                  <h2>Severity distribution</h2>
+                </div>
+              </div>
+              <div class="chart-stack">
                 <div id="severity-chart" class="severity-chart empty">Awaiting scan</div>
                 <div id="severity-breakdown" class="severity-breakdown empty">Run a scan to view severity distribution.</div>
               </div>
             </article>
 
-            <article class="report-block">
-              <h3>Risk Trend</h3>
-              <div id="risk-trend" class="risk-trend empty">No scan history yet.</div>
+            <article class="panel analytics-panel">
+              <div class="panel-heading compact">
+                <div>
+                  <p class="section-label">Analytics</p>
+                  <h2>Risk trend</h2>
+                </div>
+              </div>
+              <div id="risk-trend" class="trend-chart empty">No scan history yet.</div>
             </article>
-          </div>
-          <p class="disclaimer-text">Findings are heuristic and should be manually validated.</p>
-        </section>
 
-        <section class="panel history-panel">
-          <div class="panel-heading">
-            <div>
-              <p class="section-label">Saved Scans</p>
-              <h2>Recent History</h2>
+            <article class="panel analytics-panel">
+              <div class="panel-heading compact">
+                <div>
+                  <p class="section-label">Activity</p>
+                  <h2>Recent activity</h2>
+                </div>
+              </div>
+              <div id="activity-feed" class="activity-feed empty">Recent activity will appear here.</div>
+            </article>
+          </section>
+
+          <section class="panel report-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="section-label">Report center</p>
+                <h2>Summary and exports</h2>
+              </div>
+              <div class="actions">
+                <button id="download-pdf" type="button" disabled>PDF</button>
+                <button id="download-txt" type="button" disabled>TXT</button>
+                <button id="download-md" type="button" disabled>Markdown</button>
+                <button id="download-json" type="button" disabled>JSON</button>
+                <button id="download-html" type="button" disabled>HTML</button>
+              </div>
             </div>
-          </div>
-          <div id="history-list" class="history-list empty">No scans yet.</div>
-        </section>
-
-        <section class="panel report-panel">
-          <div class="panel-heading">
-            <div>
-              <p class="section-label">Report Center</p>
-              <h2>Exports And Guidance</h2>
+            <div class="report-layout">
+              <div id="report-content" class="report-content empty">Run a scan to generate a summary.</div>
+              <aside class="action-memo">
+                <p class="section-label">Action memo</p>
+                <div id="ai-content" class="memo-content empty">Compact remediation priorities will appear here for the selected scan.</div>
+              </aside>
             </div>
-            <div class="actions">
-              <button id="download-pdf" type="button" disabled>PDF</button>
-              <button id="download-txt" type="button" disabled>TXT</button>
-              <button id="download-md" type="button" disabled>Markdown</button>
-              <button id="download-json" type="button" disabled>JSON</button>
-              <button id="download-html" type="button" disabled>HTML</button>
+          </section>
+
+          <section class="panel filters-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="section-label">Findings</p>
+                <h2>Review findings</h2>
+              </div>
             </div>
-          </div>
-
-          <div id="report-content" class="report-content empty">Run a scan to generate a report.</div>
-        </section>
-
-        <section class="panel ai-panel">
-          <div class="panel-heading">
-            <div>
-              <p class="section-label">AI Assist</p>
-              <h2>Simple-Language Explanations</h2>
+            <div class="filters-grid">
+              <label class="select-field" for="severity-filter">
+                <span>Severity</span>
+                <select id="severity-filter">
+                  <option value="all">All severities</option>
+                  <option value="critical">Critical</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                  <option value="info">Info</option>
+                </select>
+              </label>
+              <label class="select-field" for="category-filter">
+                <span>Category</span>
+                <select id="category-filter">
+                  <option value="all">All categories</option>
+                </select>
+              </label>
+              <label class="select-field" for="search-filter">
+                <span>Search</span>
+                <input id="search-filter" type="search" placeholder="TLS, CSP, cookies, admin..." />
+              </label>
             </div>
-            <button id="refresh-ai" type="button" class="secondary-button" disabled>Refresh AI Notes</button>
-          </div>
-          <div id="ai-content" class="report-content empty">AI explanations will appear here for the selected scan.</div>
-        </section>
+            <p id="filter-results" class="filter-results">Showing 0 findings.</p>
+            <div id="findings-list" class="findings-list empty">No findings to display yet.</div>
+          </section>
 
-        <section class="panel filters-panel">
-          <div class="panel-heading">
-            <div>
-              <p class="section-label">Findings Review</p>
-              <h2>Search And Filter</h2>
-            </div>
-          </div>
-
-          <div class="filters-grid">
-            <label class="select-field" for="severity-filter">
-              <span>Severity</span>
-              <select id="severity-filter">
-                <option value="all">All severities</option>
-                <option value="critical">Critical</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-                <option value="info">Info</option>
-              </select>
-            </label>
-
-            <label class="select-field" for="category-filter">
-              <span>Category</span>
-              <select id="category-filter">
-                <option value="all">All categories</option>
-              </select>
-            </label>
-
-            <label class="select-field search-field" for="search-filter">
-              <span>Search</span>
-              <input id="search-filter" type="search" placeholder="CSP, TLS, cookies, admin..." />
-            </label>
-          </div>
-          <p id="filter-results" class="filter-results">Showing 0 findings.</p>
-        </section>
-
-        <section class="panel coverage-panel">
-          <div class="panel-heading">
-            <div>
-              <p class="section-label">Coverage</p>
-              <h2>Pages And Asset Inventory</h2>
-            </div>
-          </div>
-          <div id="coverage-content" class="coverage-content empty">No coverage data yet.</div>
-        </section>
-
-        <section class="panel findings-panel">
-          <div class="panel-heading">
-            <div>
-              <p class="section-label">Detailed Findings</p>
-              <h2>Passive Security Observations</h2>
-            </div>
-          </div>
-          <div id="findings-list" class="findings-list empty">No findings to display yet.</div>
+          <section class="dashboard-grid footer-grid">
+            <article class="panel coverage-panel">
+              <div class="panel-heading compact">
+                <div>
+                  <p class="section-label">Coverage</p>
+                  <h2>Pages and inventory</h2>
+                </div>
+              </div>
+              <div id="coverage-content" class="coverage-content empty">No coverage data yet.</div>
+            </article>
+            <article class="panel notes-panel">
+              <p class="section-label">Notes</p>
+              <div class="notes-list">
+                <div class="note-card">
+                  <strong>Passive only</strong>
+                  <span>The platform does not exploit vulnerabilities, brute-force content, or perform intrusive testing.</span>
+                </div>
+                <div class="note-card">
+                  <strong>Manual validation</strong>
+                  <span>Heuristic findings should be reviewed by a security engineer before remediation or disclosure decisions.</span>
+                </div>
+              </div>
+            </article>
+          </section>
         </section>
       </main>
     </div>
 
-    <script src="./app.js"></script>
+    <script src="/app.js"></script>
   </body>
-  </html>
+</html>
