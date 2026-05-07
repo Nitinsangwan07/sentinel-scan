@@ -1,3 +1,5 @@
+import dns from "node:dns/promises";
+import net from "node:net";
 import tls from "node:tls";
 
 const USER_AGENT =
@@ -5,7 +7,7 @@ const USER_AGENT =
 
 const DEFAULT_SCAN_OPTIONS = {
   includeSubpages: true,
-  maxPages: 6,
+  maxPages: 10,
   requestTimeoutMs: 12000,
 };
 
@@ -44,10 +46,94 @@ const SENSITIVE_FILE_PATHS = [
   "/config.php.bak",
 ];
 
+const BLOCKED_HOST_SUFFIXES = [".local", ".internal", ".localhost"];
+const MAX_REDIRECT_HOPS = 6;
+
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+function isBlockedHostname(hostname) {
+  const normalized = String(hostname || "").toLowerCase();
+  return normalized === "localhost" || BLOCKED_HOST_SUFFIXES.some((suffix) => normalized.endsWith(suffix));
+}
+
+function isPrivateOrReservedIp(address) {
+  if (!net.isIP(address)) {
+    return false;
+  }
+
+  if (address === "0.0.0.0" || address === "127.0.0.1") {
+    return true;
+  }
+
+  if (address.startsWith("10.") || address.startsWith("192.168.")) {
+    return true;
+  }
+
+  const match172 = address.match(/^172\.(\d+)\./);
+  if (match172) {
+    const secondOctet = Number(match172[1]);
+    if (secondOctet >= 16 && secondOctet <= 31) {
+      return true;
+    }
+  }
+
+  if (address.startsWith("169.254.")) {
+    return true;
+  }
+
+  const normalized = address.toLowerCase();
+  return (
+    normalized === "::1" ||
+    normalized === "::" ||
+    normalized.startsWith("fc") ||
+    normalized.startsWith("fd") ||
+    normalized.startsWith("fe80:")
+  );
+}
+
+export async function assertSafeUrl(rawUrl) {
+  let parsed;
+
+  try {
+    parsed = rawUrl instanceof URL ? new URL(rawUrl.toString()) : new URL(String(rawUrl));
+  } catch {
+    throw new Error("Invalid URL format.");
+  }
+
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error("Only HTTP and HTTPS targets are supported.");
+  }
+
+  if (isBlockedHostname(parsed.hostname)) {
+    throw new Error("Scanning localhost or internal hostnames is not allowed.");
+  }
+
+  if (net.isIP(parsed.hostname)) {
+    if (isPrivateOrReservedIp(parsed.hostname)) {
+      throw new Error("Scanning private or reserved IP addresses is not allowed.");
+    }
+
+    return parsed;
+  }
+
+  let addresses;
+
+  try {
+    addresses = await dns.lookup(parsed.hostname, { all: true });
+  } catch {
+    throw new Error(`Could not resolve hostname: ${parsed.hostname}`);
+  }
+
+  for (const entry of addresses) {
+    if (isPrivateOrReservedIp(entry.address)) {
+      throw new Error("Scanning private or reserved IP addresses is not allowed.");
+    }
+  }
+
+  return parsed;
+}
 export function normalizeScanOptions(options = {}) {
   const includeSubpages = options.includeSubpages !== false;
   const requestedMaxPages = Number(options.maxPages);
@@ -1359,6 +1445,7 @@ function buildMarkdownReport(scan) {
 
 export async function scanWebsite(target, requestedOptions = {}) {
   const options = normalizeScanOptions(requestedOptions);
+  await assertSafeUrl(target);
   const primaryResponse = await fetchDocument(target, { timeoutMs: options.requestTimeoutMs });
   const finalUrl = primaryResponse.url;
   const headerAnalysis = analyzeHeaders(target, primaryResponse);

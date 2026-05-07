@@ -20,3 +20,6 @@ export const appConfig = {
   aiApiKey: process.env.AI_API_KEY || "",
   aiApiUrl: process.env.AI_API_URL || "",
 };
+
+appConfig.isProduction = appConfig.nodeEnv === "production";
+appConfig.isDevelopment = appConfig.nodeEnv === "development";

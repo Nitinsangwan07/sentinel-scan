@@ -12,6 +12,10 @@ export async function verifyPassword(password, passwordHash) {
 }
 
 export function issueToken(user) {
+  if (appConfig.isProduction && appConfig.jwtSecret.length < 32) {
+    throw new Error("JWT_SECRET must be at least 32 characters long in production.");
+  }
+
   return jwt.sign(
     {
       sub: user.id,
@@ -21,10 +25,13 @@ export function issueToken(user) {
     appConfig.jwtSecret,
     {
       expiresIn: appConfig.jwtExpiresIn,
+      algorithm: "HS256",
     },
   );
 }
 
 export function decodeToken(token) {
-  return jwt.verify(token, appConfig.jwtSecret);
+  return jwt.verify(token, appConfig.jwtSecret, {
+    algorithms: ["HS256"],
+  });
 }

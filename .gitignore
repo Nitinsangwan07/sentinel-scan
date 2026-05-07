@@ -1,3 +1,14 @@
 node_modules/
 .env
+!.env.example
+*.env
+new.env
+*.pem
+*.key
+*.p12
 data/fallback/store.json
+logs/
+*.log
+coverage/
+.vscode/
+.idea/

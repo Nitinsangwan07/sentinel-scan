@@ -52,7 +52,15 @@ export const userRepository = {
 
   async create({ name, email, passwordHash = null, authProvider = "local", googleId = null }) {
     if (appConfig.storageMode === "mongo") {
-      return normalizeUser(await UserModel.create({ name, email, passwordHash, authProvider, googleId }));
+      return normalizeUser(
+        await UserModel.create({
+          name,
+          email: email.toLowerCase(),
+          passwordHash,
+          authProvider,
+          googleId,
+        }),
+      );
     }
 
     const users = await getFallbackCollection("users");

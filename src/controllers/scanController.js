@@ -10,7 +10,13 @@ import { createError } from "../utils/createError.js";
 function normalizeTarget(target) {
   const trimmed = String(target || "").trim();
   const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-  const parsed = new URL(withProtocol);
+  let parsed;
+
+  try {
+    parsed = new URL(withProtocol);
+  } catch {
+    throw createError(400, "Enter a valid HTTP or HTTPS URL.");
+  }
 
   if (!["http:", "https:"].includes(parsed.protocol)) {
     throw createError(400, "Only HTTP and HTTPS targets are supported.");

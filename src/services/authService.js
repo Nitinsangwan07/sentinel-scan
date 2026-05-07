@@ -6,6 +6,7 @@ import { createError } from "../utils/createError.js";
 import { hashPassword, issueToken, verifyPassword } from "../utils/auth.js";
 
 const googleClient = appConfig.googleClientId ? new OAuth2Client(appConfig.googleClientId) : null;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function sanitizeUser(user) {
   return {
@@ -19,6 +20,16 @@ function sanitizeUser(user) {
 
 function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
+}
+
+function validateEmail(email) {
+  const normalized = normalizeEmail(email);
+
+  if (!EMAIL_PATTERN.test(normalized)) {
+    throw createError(400, "Enter a valid email address.");
+  }
+
+  return normalized;
 }
 
 function validateName(name) {
@@ -42,7 +53,7 @@ function validatePassword(password) {
 }
 
 export async function signupUser({ name, email, password }) {
-  const normalizedEmail = normalizeEmail(email);
+  const normalizedEmail = validateEmail(email);
   const existing = await userRepository.findByEmail(normalizedEmail);
 
   if (existing) {
@@ -63,7 +74,7 @@ export async function signupUser({ name, email, password }) {
 }
 
 export async function loginUser({ email, password }) {
-  const normalizedEmail = normalizeEmail(email);
+  const normalizedEmail = validateEmail(email);
   const user = await userRepository.findByEmail(normalizedEmail);
 
   if (!user) {
@@ -109,10 +120,15 @@ export async function loginWithGoogle(idToken) {
 
   const googleId = payload?.sub;
   const email = normalizeEmail(payload?.email);
+  const emailVerified = payload?.email_verified === true;
   const name = String(payload?.name || payload?.given_name || "Google User").trim();
 
   if (!googleId || !email) {
     throw createError(400, "Google account information was incomplete.");
+  }
+
+  if (!emailVerified) {
+    throw createError(401, "Google sign-in requires a verified Google email address.");
   }
 
   let user = await userRepository.findByGoogleId(googleId);

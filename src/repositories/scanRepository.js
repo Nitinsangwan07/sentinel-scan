@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 import { appConfig } from "../config/env.js";
 import { ScanModel } from "../models/Scan.js";
 import {
@@ -52,6 +54,10 @@ export const scanRepository = {
 
   async findByIdForUser(id, userId) {
     if (appConfig.storageMode === "mongo") {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return null;
+      }
+
       return normalizeScan(await ScanModel.findOne({ _id: id, userId }).lean());
     }
 

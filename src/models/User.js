@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
       index: true,
+      match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Invalid email address."],
     },
 
     passwordHash: {
@@ -39,6 +40,20 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: {
+      transform(document, returnedObject) {
+        delete returnedObject.passwordHash;
+        delete returnedObject.__v;
+        return returnedObject;
+      },
+    },
+    toObject: {
+      transform(document, returnedObject) {
+        delete returnedObject.passwordHash;
+        delete returnedObject.__v;
+        return returnedObject;
+      },
+    },
   },
 );
 

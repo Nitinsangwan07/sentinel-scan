@@ -1,7 +1,5 @@
-import jwt from "jsonwebtoken";
-
-import { appConfig } from "../config/env.js";
 import { createError } from "../utils/createError.js";
+import { decodeToken } from "../utils/auth.js";
 import { userRepository } from "../repositories/userRepository.js";
 
 function extractBearerToken(request) {
@@ -22,7 +20,7 @@ export async function authenticate(request, response, next) {
       throw createError(401, "Authentication token is required.");
     }
 
-    const payload = jwt.verify(token, appConfig.jwtSecret);
+    const payload = decodeToken(token);
     const user = await userRepository.findById(payload.sub);
 
     if (!user) {
@@ -36,6 +34,11 @@ export async function authenticate(request, response, next) {
     };
     next();
   } catch (error) {
-    next(createError(401, error.message || "Invalid or expired token."));
+    if (error.name === "TokenExpiredError") {
+      next(createError(401, "Your session has expired. Please sign in again."));
+      return;
+    }
+
+    next(createError(401, "Invalid or expired token."));
   }
 }

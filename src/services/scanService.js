@@ -1,8 +1,11 @@
 import crypto from "node:crypto";
 
-import { normalizeScanOptions, scanWebsite } from "../lib/scanner.js";
+import { assertSafeUrl, normalizeScanOptions, scanWebsite } from "../lib/scanner.js";
 import { scanRepository } from "../repositories/scanRepository.js";
+import { createError } from "../utils/createError.js";
 import { buildAiAssist } from "./aiAssistService.js";
+
+const MAX_URL_LENGTH = 2048;
 
 function buildTrend(scans) {
   return scans
@@ -31,6 +34,16 @@ function toScanSummary(scan) {
 }
 
 export async function executeScan({ userId, url, options }) {
+  if (!url || typeof url !== "string") {
+    throw createError(400, "A target URL is required.");
+  }
+
+  if (url.length > MAX_URL_LENGTH) {
+    throw createError(400, "The target URL is too long.");
+  }
+
+  await assertSafeUrl(url);
+
   const startedAt = Date.now();
   const normalizedOptions = normalizeScanOptions(options);
   const result = await scanWebsite(url, normalizedOptions);
