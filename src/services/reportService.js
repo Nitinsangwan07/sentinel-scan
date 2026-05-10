@@ -8,13 +8,28 @@ const SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"];
 const SEVERITY_COLORS = {
   critical: "#c7544f",
   high: "#d07a3a",
-  medium: "#bc9544",
+  medium: "#a78a35",
   low: "#348f6a",
   info: "#53789b",
 };
+const PAGE_MARGIN = 44;
+const CONTENT_WIDTH = 507;
+const FOOTER_Y = 790;
+
+function safeText(value, fallback = "n/a") {
+  return String(value ?? fallback);
+}
+
+function formatDuration(durationMs) {
+  const duration = Number(durationMs);
+  if (!Number.isFinite(duration) || duration <= 0) return "n/a";
+  return duration < 1000 ? `${duration} ms` : `${(duration / 1000).toFixed(1)} s`;
+}
 
 function toRecommendations(scan) {
-  return (scan.report.priorityActions || []).slice(0, 6).map((action, index) => `${index + 1}. ${action.action} (${action.reason})`);
+  return (scan.report?.priorityActions || [])
+    .slice(0, 6)
+    .map((action, index) => `${index + 1}. ${action.action} (${action.reason})`);
 }
 
 function buildTextReport(scan) {
@@ -25,7 +40,7 @@ function buildTextReport(scan) {
     `Target URL: ${scan.target}`,
     `Final URL: ${scan.finalUrl}`,
     `Scan Timestamp: ${scan.scannedAt}`,
-    `Scan Duration: ${scan.durationMs} ms`,
+    `Scan Duration: ${formatDuration(scan.durationMs)}`,
     `Risk Score: ${scan.risk.score}/100 (${scan.risk.band})`,
     `Pages Crawled: ${scan.coverage.pagesCrawled}`,
     `Top Category: ${Object.entries(scan.summary.byCategory || {}).sort((a, b) => b[1] - a[1])[0]?.[0] || "n/a"}`,
@@ -67,7 +82,7 @@ function buildMarkdownReport(scan) {
     `- Target: ${scan.target}`,
     `- Final URL: ${scan.finalUrl}`,
     `- Scanned at: ${scan.scannedAt}`,
-    `- Duration: ${scan.durationMs} ms`,
+    `- Duration: ${formatDuration(scan.durationMs)}`,
     `- Risk score: ${scan.risk.score}/100 (${scan.risk.band})`,
     `- Pages crawled: ${scan.coverage.pagesCrawled}`,
     "",
@@ -126,99 +141,162 @@ function buildJsonReport(scan) {
   );
 }
 
-function drawPageFooter(doc, pageNumber) {
-  const page = doc.page;
+function ensureSpace(doc, height) {
+  if (doc.y + height > FOOTER_Y) {
+    doc.addPage();
+    doc.y = PAGE_MARGIN;
+  }
+}
+
+function drawSectionTitle(doc, title) {
+  ensureSpace(doc, 34);
+  doc.font("Helvetica-Bold").fontSize(14).fillColor("#242521").text(title, PAGE_MARGIN, doc.y);
+  doc.moveDown(0.45);
+}
+
+function drawPageFooter(doc, pageNumber, totalPages) {
   doc.save();
-  doc.fontSize(8).fillColor("#8a7f73").text(`Page ${pageNumber}`, 42, page.height - 28, {
-    align: "right",
-    width: page.width - 84,
-  });
+  doc.font("Helvetica").fontSize(8).fillColor("#8a8f86").text(
+    `Sentinel Scan Security Report  |  Page ${pageNumber} of ${totalPages}`,
+    PAGE_MARGIN,
+    doc.page.height - 30,
+    { align: "center", width: CONTENT_WIDTH },
+  );
   doc.restore();
 }
 
-function drawSeverityBars(doc, bySeverity, yStart) {
-  let y = yStart;
-  const total = Object.values(bySeverity || {}).reduce((sum, count) => sum + count, 0) || 1;
+function drawHeader(doc, scan) {
+  doc.rect(0, 0, doc.page.width, 118).fill("#286f67");
+  doc.circle(66, 46, 20).fill("#f8f6f1");
+  doc.circle(66, 46, 11).fill("#286f67");
+  doc.fillColor("#f8f6f1").font("Helvetica-Bold").fontSize(13).text("Sentinel Scan", 96, 30);
+  doc.fontSize(24).text("Passive Web Security Report", 96, 50, { width: 390 });
+  doc.font("Helvetica").fontSize(10).text("Authorized, passive website assessment", 96, 82);
+
+  doc.roundedRect(408, 30, 128, 58, 10).fill("#f8f6f1");
+  doc.fillColor("#286f67").font("Helvetica-Bold").fontSize(20).text(`${scan.risk?.score ?? 0}/100`, 424, 42);
+  doc.fillColor("#5f665d").font("Helvetica").fontSize(9).text(safeText(scan.risk?.band, "Unknown"), 424, 66);
+  doc.y = 142;
+}
+
+function drawMetadata(doc, scan) {
+  drawSectionTitle(doc, "Scan Metadata");
+  const rows = [
+    ["Target", scan.target],
+    ["Final URL", scan.finalUrl],
+    ["Scanned", scan.scannedAt],
+    ["Duration", formatDuration(scan.durationMs)],
+    ["Pages Crawled", scan.coverage?.pagesCrawled],
+    ["Total Findings", scan.summary?.total],
+  ];
+
+  const startY = doc.y;
+  rows.forEach(([label, value], index) => {
+    const x = index % 2 === 0 ? PAGE_MARGIN : 302;
+    const y = startY + Math.floor(index / 2) * 34;
+    doc.font("Helvetica-Bold").fontSize(8).fillColor("#6f736c").text(label.toUpperCase(), x, y);
+    doc.font("Helvetica").fontSize(9.5).fillColor("#242521").text(safeText(value), x, y + 12, { width: 218, ellipsis: true });
+  });
+  doc.y = startY + 112;
+}
+
+function drawSeverityBars(doc, bySeverity = {}) {
+  drawSectionTitle(doc, "Severity Breakdown");
+  const total = Object.values(bySeverity).reduce((sum, count) => sum + count, 0) || 1;
 
   for (const severity of SEVERITY_ORDER) {
-    if (!bySeverity?.[severity]) continue;
-    const count = bySeverity[severity];
-    const width = Math.max(30, Math.round((count / total) * 230));
-    doc.fillColor("#3d352d").fontSize(10).text(severity.toUpperCase(), 42, y + 4, { width: 90 });
-    doc.roundedRect(138, y, width, 12, 6).fill(SEVERITY_COLORS[severity]);
-    doc.fillColor("#3d352d").text(String(count), 380, y + 1);
-    y += 22;
+    const count = bySeverity[severity] || 0;
+    ensureSpace(doc, 24);
+    const y = doc.y;
+    const barWidth = Math.max(count ? 24 : 0, Math.round((count / total) * 260));
+    doc.font("Helvetica-Bold").fontSize(9).fillColor("#3f4540").text(severity.toUpperCase(), PAGE_MARGIN, y + 2, { width: 82 });
+    doc.roundedRect(PAGE_MARGIN + 94, y, 270, 12, 6).fill("#edf0eb");
+    if (barWidth > 0) {
+      doc.roundedRect(PAGE_MARGIN + 94, y, barWidth, 12, 6).fill(SEVERITY_COLORS[severity]);
+    }
+    doc.font("Helvetica").fontSize(9).fillColor("#3f4540").text(String(count), PAGE_MARGIN + 380, y + 1);
+    doc.y += 23;
   }
+  doc.moveDown(0.4);
+}
 
-  return y;
+function drawRecommendations(doc, scan) {
+  const recommendations = toRecommendations(scan);
+  if (!recommendations.length) return;
+
+  drawSectionTitle(doc, "Priority Recommendations");
+  recommendations.forEach((line) => {
+    ensureSpace(doc, 32);
+    doc.font("Helvetica").fontSize(10).fillColor("#4f574f").text(line, PAGE_MARGIN, doc.y, {
+      width: CONTENT_WIDTH,
+      lineGap: 2,
+    });
+    doc.moveDown(0.45);
+  });
+}
+
+function drawFindingCard(doc, finding, index) {
+  const title = `${index + 1}. ${finding.title}`;
+  const evidence = safeText(finding.evidence, "No evidence captured.");
+  const remediation = safeText(finding.remediation, "Review and remediate according to application context.");
+  const titleHeight = doc.heightOfString(title, { width: 350 });
+  const evidenceHeight = Math.min(44, doc.heightOfString(evidence, { width: 214 }));
+  const remediationHeight = doc.heightOfString(remediation, { width: 464 });
+  const cardHeight = Math.max(120, titleHeight + evidenceHeight + remediationHeight + 66);
+
+  ensureSpace(doc, cardHeight + 12);
+  const y = doc.y;
+  doc.roundedRect(PAGE_MARGIN, y, CONTENT_WIDTH, cardHeight, 10).fillAndStroke("#fffdfa", "#dfe4dc");
+  doc.fillColor(SEVERITY_COLORS[finding.severity] || SEVERITY_COLORS.info)
+    .font("Helvetica-Bold")
+    .fontSize(10.5)
+    .text(title, PAGE_MARGIN + 14, y + 14, { width: 350 });
+  doc.fillColor("#6f736c")
+    .font("Helvetica")
+    .fontSize(8.5)
+    .text(`${safeText(finding.severity).toUpperCase()} | ${safeText(finding.category)} | confidence ${finding.confidence || "--"}%`, PAGE_MARGIN + 14, y + 36 + titleHeight, { width: 350 });
+  doc.text(`Affected: ${safeText(finding.location, "Global")}`, PAGE_MARGIN + 14, y + 52 + titleHeight, { width: 350 });
+  doc.fillColor("#242521").font("Helvetica-Bold").fontSize(8).text("Evidence", PAGE_MARGIN + 278, y + 14);
+  doc.fillColor("#4f574f").font("Helvetica").fontSize(8).text(evidence, PAGE_MARGIN + 278, y + 28, { width: 214, height: 48 });
+  doc.fillColor("#242521").font("Helvetica-Bold").fontSize(8).text("Remediation", PAGE_MARGIN + 14, y + cardHeight - remediationHeight - 24);
+  doc.fillColor("#4f574f").font("Helvetica").fontSize(8.7).text(remediation, PAGE_MARGIN + 14, y + cardHeight - remediationHeight - 10, { width: 464, lineGap: 1 });
+  doc.y = y + cardHeight + 12;
 }
 
 async function buildPdfBuffer(scan) {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 42, size: "A4", bufferPages: true });
+    const doc = new PDFDocument({ margin: PAGE_MARGIN, size: "A4", bufferPages: true });
     const chunks = [];
 
     doc.on("data", (chunk) => chunks.push(chunk));
     doc.on("end", () => resolve(Buffer.concat(chunks)));
     doc.on("error", reject);
 
-    doc.rect(0, 0, doc.page.width, 112).fill("#286f67");
-    doc.fillColor("#f8f6f1").font("Helvetica-Bold").fontSize(13).text("Sentinel Scan", 42, 28);
-    doc.fontSize(24).text("Passive Web Security Assessment", 42, 48);
-    doc.font("Helvetica").fontSize(10).text("Professional passive findings for authorized targets only", 42, 78);
-
-    doc.y = 132;
-    doc.fillColor("#241f19").font("Helvetica-Bold").fontSize(16).text("Executive Summary");
-    doc.moveDown(0.5);
-    doc.font("Helvetica").fontSize(10.5).fillColor("#5f564b").text(scan.report.executiveSummary, { width: 510, lineGap: 2 });
-    doc.moveDown(1.2);
-
-    doc.fillColor("#241f19").font("Helvetica-Bold").fontSize(16).text("Scan Metadata");
-    doc.moveDown(0.5);
-    [
-      ["Target", scan.target],
-      ["Final URL", scan.finalUrl],
-      ["Scanned At", scan.scannedAt],
-      ["Duration", `${scan.durationMs} ms`],
-      ["Risk Score", `${scan.risk.score}/100 (${scan.risk.band})`],
-      ["Pages Crawled", String(scan.coverage.pagesCrawled)],
-    ].forEach(([label, value]) => {
-      doc.font("Helvetica-Bold").fillColor("#241f19").text(`${label}: `, { continued: true }).font("Helvetica").fillColor("#5f564b").text(String(value));
+    drawHeader(doc, scan);
+    drawSectionTitle(doc, "Executive Summary");
+    doc.font("Helvetica").fontSize(10.5).fillColor("#4f574f").text(safeText(scan.report?.executiveSummary, "No executive summary available."), PAGE_MARGIN, doc.y, {
+      width: CONTENT_WIDTH,
+      lineGap: 3,
     });
-
     doc.moveDown(1.2);
-    doc.font("Helvetica-Bold").fillColor("#241f19").fontSize(16).text("Severity Breakdown");
-    const nextY = drawSeverityBars(doc, scan.summary.bySeverity || {}, doc.y + 8);
-    doc.y = nextY + 10;
-
-    doc.font("Helvetica-Bold").fillColor("#241f19").fontSize(16).text("Priority Recommendations");
-    doc.moveDown(0.5);
-    toRecommendations(scan).forEach((line) => {
-      doc.font("Helvetica").fontSize(10.5).fillColor("#5f564b").text(line, { width: 510, lineGap: 2 });
-    });
+    drawMetadata(doc, scan);
+    drawSeverityBars(doc, scan.summary?.bySeverity || {});
+    drawRecommendations(doc, scan);
 
     doc.addPage();
-    doc.fillColor("#241f19").font("Helvetica-Bold").fontSize(16).text("Findings Overview");
-    doc.moveDown(0.5);
+    doc.y = PAGE_MARGIN;
+    drawSectionTitle(doc, "Findings Detail");
 
-    scan.findings.slice(0, 16).forEach((finding, index) => {
-      if (doc.y > 730) {
-        doc.addPage();
-      }
-
-      doc.roundedRect(42, doc.y, 510, 60, 12).fillAndStroke("#fffdf8", "#dfd7cb");
-      const startY = doc.y - 54;
-      doc.fillColor(SEVERITY_COLORS[finding.severity] || "#53789b").font("Helvetica-Bold").fontSize(10).text(`${index + 1}. ${finding.title}`, 56, startY, { width: 330 });
-      doc.fillColor("#5f564b").font("Helvetica").fontSize(9).text(`${finding.severity.toUpperCase()} | ${finding.category} | confidence ${finding.confidence || "--"}%`, 56, startY + 18);
-      doc.text(`Affected: ${finding.location || "Global"}`, 56, startY + 31, { width: 210 });
-      doc.text(`Evidence: ${finding.evidence}`, 270, startY, { width: 265, height: 46 });
-      doc.y += 70;
-    });
+    if (!scan.findings?.length) {
+      doc.font("Helvetica").fontSize(10).fillColor("#4f574f").text("No findings were recorded for this passive scan.");
+    } else {
+      scan.findings.forEach((finding, index) => drawFindingCard(doc, finding, index));
+    }
 
     const range = doc.bufferedPageRange();
     for (let index = range.start; index < range.start + range.count; index += 1) {
       doc.switchToPage(index);
-      drawPageFooter(doc, index - range.start + 1);
+      drawPageFooter(doc, index - range.start + 1, range.count);
     }
 
     doc.end();

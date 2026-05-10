@@ -14,8 +14,8 @@ const DEFAULT_SCAN_OPTIONS = {
 const SECURITY_HEADERS = [
   {
     name: "content-security-policy",
-    severity: "high",
-    title: "Content Security Policy is missing",
+    severity: "medium",
+    title: "Content Security Policy is not configured",
     remediation:
       "Create a restrictive Content-Security-Policy that limits script, style, frame, and connection sources to trusted origins.",
   }
@@ -552,6 +552,7 @@ function analyzeHtml(html, pageUrl) {
   const formsCount = (html.match(/<form[\s>]/gi) || []).length;
   const hasPasswordField = /<input[^>]*type=["']password["']/i.test(html);
   const hasCsrfHint = /(csrf|xsrf|authenticity_token)/i.test(html);
+  const hasStateChangingForm = /<form\b(?=[^>]*method=["']post["'])/i.test(html);
   const inlineScriptCount = (html.match(/<script(?![^>]*\bsrc=)[^>]*>/gi) || []).length;
   const targetBlankWithoutRel =
     (html.match(/<a\b(?=[^>]*target=["']_blank["'])(?![^>]*rel=["'][^"']*(noopener|noreferrer)[^"']*["'])[^>]*>/gi) || [])
@@ -613,11 +614,11 @@ function analyzeHtml(html, pageUrl) {
       );
     }
 
-    if (!hasCsrfHint) {
+    if (hasStateChangingForm && !hasCsrfHint) {
       findings.push(
         buildFinding({
           id: `csrf-token-not-observed-${pageUrl}`,
-          title: "No obvious CSRF token markers found in forms",
+          title: "State-changing form has no visible CSRF marker",
           severity: "medium",
           category: "forms",
           description:
@@ -626,7 +627,7 @@ function analyzeHtml(html, pageUrl) {
             "If the application relies on cookies for session state, cross-site request forgery risks may be higher.",
           remediation:
             "Review state-changing forms and ensure CSRF protections are consistently enforced server-side.",
-          evidence: `Searched for token markers on ${pageUrl}.`,
+          evidence: `POST form observed without common CSRF token markers on ${pageUrl}.`,
           location: pageUrl,
         }),
       );
@@ -1268,8 +1269,13 @@ function analyzeInventory(inventory) {
 }
 
 function calculateRiskScore(findings) {
-  const rawScore = findings.reduce((total, finding) => total + severityWeight(finding.severity), 0);
-  return Math.min(100, rawScore);
+  const rawScore = findings.reduce((total, finding) => {
+    const confidence = Number.isFinite(finding.confidence) ? finding.confidence : 70;
+    const confidenceFactor = Math.max(0.55, Math.min(1.15, confidence / 85));
+    return total + severityWeight(finding.severity) * confidenceFactor;
+  }, 0);
+
+  return Math.min(100, Math.round(rawScore));
 }
 
 function scoreBand(score) {
@@ -1549,5 +1555,7 @@ export async function scanWebsite(target, requestedOptions = {}) {
     },
   };
 }
+
+
 
 

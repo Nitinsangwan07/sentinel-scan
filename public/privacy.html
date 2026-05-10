@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy Policy | Sentinel Scan</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="legal-page" data-theme="dark">
+  <div class="app-shell">
+    <header class="site-header">
+      <a class="brand-wrapper" href="/"><img src="/favicon.svg" alt="Sentinel Scan" class="site-logo" /><div class="brand-text"><h1>Privacy Policy</h1><p class="hero-subtitle">How Sentinel Scan handles defensive security data.</p></div></a>
+      <a class="ghost-button" href="/">Back to dashboard</a>
+    </header>
+    <main class="legal-content">
+      <section class="panel">
+        <p class="section-label">Privacy</p>
+        <h2>Responsible data handling for authorized scans</h2>
+        <p>Sentinel Scan is designed for passive, authorized website security reviews. The platform stores only the account, scan, finding, and report data needed to provide authenticated dashboard access, scan history, and downloadable reports.</p>
+      </section>
+      <section class="legal-grid">
+        <article class="report-block"><h3>Account Data</h3><p>Names, email addresses, authentication provider metadata, hashed passwords, and JWT session state are used to protect access to user-specific scan history.</p></article>
+        <article class="report-block"><h3>Scan Data</h3><p>Target URLs, timestamps, passive findings, evidence snippets, risk scores, crawler coverage, and report exports may be stored for later review.</p></article>
+        <article class="report-block"><h3>JWT Sessions</h3><p>JWTs are stored client-side by the browser and sent to protected API routes. Tokens should be treated as sensitive session credentials.</p></article>
+        <article class="report-block"><h3>Passive Architecture</h3><p>The scanner does not exploit vulnerabilities, brute force content, fuzz inputs, or perform denial-of-service behavior. Findings are heuristic and should be validated manually.</p></article>
+        <article class="report-block"><h3>Authorization</h3><p>Users are responsible for scanning only websites they own or have explicit permission to assess. Unauthorized scanning may violate laws, policies, or terms of service.</p></article>
+        <article class="report-block"><h3>Retention</h3><p>Scan history and exported report records remain available to the authenticated user until removed through future retention controls or database maintenance.</p></article>
+      </section>
+      <section class="panel">
+        <h2>Disclaimer</h2>
+        <p>Sentinel Scan provides educational and defensive security intelligence. Reports are not legal advice, compliance certification, or a guarantee that an application is secure. Always validate findings with qualified security review before remediation or disclosure decisions.</p>
+      </section>
+    </main>
+    <footer class="clean-footer"><div class="footer-brand"><img src="/favicon.svg" alt="" class="footer-logo" /><div><strong>Sentinel Scan</strong><span>Made with &#10084;&#65039; by Nitin Sangwan</span></div></div></footer>
+  </div>
+</body>
+</html>

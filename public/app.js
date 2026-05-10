@@ -1,3 +1,5 @@
+const SUPPORT_EMAIL = "gamerbuddy9090@gmail.com";
+
 
 const state = {
   token: localStorage.getItem("sentinelToken") || sessionStorage.getItem("sentinelToken") || "",
@@ -6,6 +8,7 @@ const state = {
   user: null,
   scans: [],
   activeScan: null,
+  hasRevealedResults: false,
   metrics: {
     totalScans: 0,
     averageRisk: 0,
@@ -20,7 +23,10 @@ const state = {
 
 const els = {
   authPanel: document.querySelector("#auth-panel"),
+  introPanel: document.querySelector(".intro-panel"),
   dashboard: document.querySelector("#dashboard"),
+  resultsArea: document.querySelector("#results-area"),
+  historyPanel: document.querySelector("#history-panel"),
   authMessage: document.querySelector("#auth-message"),
   loginForm: document.querySelector("#login-form"),
   signupForm: document.querySelector("#signup-form"),
@@ -33,6 +39,7 @@ const els = {
   statusBanner: document.querySelector("#status-banner"),
   statusSpinner: document.querySelector("#status-spinner"),
   statusText: document.querySelector("#status-text"),
+  scanProgressFill: document.querySelector("#scan-progress-fill"),
   form: document.querySelector("#scan-form"),
   scanButton: document.querySelector("#scan-button"),
   includeSubpages: document.querySelector("#include-subpages"),
@@ -65,6 +72,12 @@ const els = {
   downloadHtml: document.querySelector("#download-html"),
   googleAuthWrapper: document.querySelector("#google-auth-wrapper"),
   googleSigninButton: document.querySelector("#google-signin-button"),
+  googleDisabledButton: document.querySelector("#google-disabled-button"),
+  supportButton: document.querySelector("#support-button"),
+  supportModal: document.querySelector("#support-modal"),
+  supportClose: document.querySelector("#support-close"),
+  supportForm: document.querySelector("#support-form"),
+  supportSuccess: document.querySelector("#support-success"),
 };
 
 function escapeHtml(value) {
@@ -103,19 +116,35 @@ function setStatus(type, message) {
   els.statusText.textContent = message;
 }
 
+function setProgress(percent) {
+  if (!els.scanProgressFill) return;
+  els.scanProgressFill.style.width = `${Math.max(0, Math.min(100, percent))}%`;
+}
+
 function setAuthMessage(message, type = "info") {
   els.authMessage.textContent = message;
   els.authMessage.dataset.type = type;
 }
 
+function revealResults(shouldShow) {
+  state.hasRevealedResults = Boolean(shouldShow);
+  els.resultsArea?.classList.toggle("hidden", !shouldShow);
+}
+
+function revealHistory(shouldShow) {
+  els.historyPanel?.classList.toggle("hidden", !shouldShow);
+}
+
 function setAuthenticated(isAuthenticated) {
-  els.authPanel.classList.toggle("hidden", isAuthenticated);
-  els.dashboard.classList.toggle("hidden", !isAuthenticated);
+  els.authPanel?.classList.toggle("hidden", isAuthenticated);
+  els.introPanel?.classList.toggle("hidden", !isAuthenticated);
+  els.dashboard?.classList.toggle("hidden", !isAuthenticated);
+  document.body.dataset.authenticated = isAuthenticated ? "true" : "false";
 }
 
 function setLoadingSkeleton(isLoading) {
   [els.historyList, els.reportContent, els.coverageContent, els.findingsList, els.activityFeed].forEach((node) => {
-    node.classList.toggle("skeleton", isLoading);
+    node?.classList.toggle("skeleton", isLoading);
   });
 }
 
@@ -167,6 +196,15 @@ function getSeverityColor(severity) {
 function getTopCategory(scan) {
   const entries = Object.entries(scan?.summary?.byCategory || {}).sort((a, b) => b[1] - a[1]);
   return entries[0]?.[0] || "--";
+}
+
+function getHostname(scan) {
+  const target = scan?.finalUrl || scan?.target || "";
+  try {
+    return new URL(target).hostname || target || "Unknown target";
+  } catch {
+    return target || "Unknown target";
+  }
 }
 
 function updateDownloadButtons(enabled) {
@@ -228,7 +266,7 @@ function renderActivityFeed() {
   els.activityFeed.className = "activity-feed";
   els.activityFeed.innerHTML = state.scans.slice(0, 5).map((scan) => `
     <article class="activity-item">
-      <strong>${escapeHtml(new URL(scan.finalUrl || scan.target).hostname)}</strong>
+      <strong>${escapeHtml(getHostname(scan))}</strong>
       <p class="muted-copy">${escapeHtml(scan.summary.total)} findings, risk ${escapeHtml(scan.risk.band)}, scanned ${escapeHtml(formatDate(scan.scannedAt))}</p>
     </article>
   `).join("");
@@ -239,6 +277,7 @@ function renderHistory() {
   els.averageRisk.textContent = String(state.metrics.averageRisk || 0);
   renderTrendChart(state.metrics.riskTrend || []);
   renderActivityFeed();
+  revealHistory(state.scans.length > 0 || state.hasRevealedResults);
 
   if (!state.scans.length) {
     els.historyList.className = "history-list empty";
@@ -253,7 +292,7 @@ function renderHistory() {
       <button class="history-item${active}" type="button" data-scan-id="${escapeHtml(scan.id)}">
         <div class="history-topline">
           <div>
-            <strong>${escapeHtml(new URL(scan.finalUrl || scan.target).hostname)}</strong>
+            <strong>${escapeHtml(getHostname(scan))}</strong>
             <span class="history-meta">${escapeHtml(formatDate(scan.scannedAt))}</span>
           </div>
           <span class="severity-badge ${escapeHtml(scan.risk.band.toLowerCase())}">${escapeHtml(scan.risk.band)}</span>
@@ -439,8 +478,9 @@ function renderCategoryFilter(scan) {
   `;
 }
 
-function updateDashboard(scan) {
+function updateDashboard(scan, { reveal = Boolean(scan) } = {}) {
   state.activeScan = scan;
+  if (reveal) revealResults(Boolean(scan));
   renderSummary(scan);
   renderReport(scan);
   renderMemo(scan);
@@ -458,10 +498,17 @@ async function loadHealth() {
 async function loadAuthConfig() {
   const payload = await fetchJson("/api/auth/config");
   state.authConfig = payload;
+
   if (payload.googleEnabled && payload.googleClientId) {
     els.googleAuthWrapper.classList.remove("hidden");
+    els.googleDisabledButton?.classList.add("hidden");
     initializeGoogleAuth(payload.googleClientId);
+    return;
   }
+
+  els.googleAuthWrapper.classList.remove("hidden");
+  els.googleDisabledButton?.classList.remove("hidden");
+  setAuthMessage("Google sign-in needs GOOGLE_CLIENT_ID in your environment settings.", "info");
 }
 
 async function loadScans() {
@@ -469,14 +516,11 @@ async function loadScans() {
   state.scans = payload.scans || [];
   state.metrics = payload.metrics || state.metrics;
   renderHistory();
-  if (state.scans.length && !state.activeScan) {
-    await loadScan(state.scans[0].id, false);
-  }
 }
 
 async function loadScan(scanId, announce = true) {
   const scan = await fetchJson(`/api/scans/${encodeURIComponent(scanId)}`);
-  updateDashboard(scan);
+  updateDashboard(scan, { reveal: true });
   if (announce) {
     setStatus("success", `Loaded saved scan for ${scan.finalUrl}.`);
   }
@@ -487,15 +531,20 @@ function logout({ silent = false, message = "Signed out. Login to continue." } =
   state.user = null;
   state.scans = [];
   state.activeScan = null;
+  state.hasRevealedResults = false;
   state.metrics = { totalScans: 0, averageRisk: 0, riskTrend: [] };
   setAuthenticated(false);
-  updateDashboard(null);
+  revealResults(false);
+  revealHistory(false);
+  updateDashboard(null, { reveal: false });
   if (!silent) setStatus("idle", message);
 }
 
 async function restoreSession() {
   if (!state.token) {
     setAuthenticated(false);
+    revealResults(false);
+    revealHistory(false);
     return;
   }
 
@@ -548,10 +597,26 @@ function buildHtmlSnapshot(scan) {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8" /><title>Sentinel Scan Snapshot</title><style>body{font-family:Arial,sans-serif;margin:32px;color:#1f2933}h1,h2,h3{margin:0 0 10px}.card{border:1px solid #d9e1e8;border-radius:14px;padding:18px;margin-bottom:14px}</style></head><body><h1>Sentinel Scan Snapshot</h1><p><strong>Target:</strong> ${escapeHtml(scan.target)}</p><p><strong>Risk:</strong> ${escapeHtml(scan.risk.score)}/100 (${escapeHtml(scan.risk.band)})</p><p><strong>Scanned:</strong> ${escapeHtml(formatDate(scan.scannedAt))}</p><div class="card"><h2>Summary</h2><p>${escapeHtml(scan.report.executiveSummary)}</p></div>${scan.findings.slice(0,10).map((finding)=>`<div class="card"><h3>${escapeHtml(finding.title)}</h3><p><strong>Severity:</strong> ${escapeHtml(finding.severity)}</p><p><strong>Confidence:</strong> ${escapeHtml(finding.confidence || "--")}%</p><p><strong>Evidence:</strong> ${escapeHtml(finding.evidence)}</p><p><strong>Remediation:</strong> ${escapeHtml(finding.remediation)}</p></div>`).join("")}</body></html>`;
 }
 
-function initializeGoogleAuth(clientId) {
-  if (!window.google?.accounts?.id || !clientId || els.googleSigninButton.dataset.ready === "true") return;
+function initializeGoogleAuth(clientId, attempt = 0) {
+  if (!clientId || els.googleSigninButton.dataset.ready === "true") return;
+
+  if (!window.google?.accounts?.id) {
+    if (attempt < 25) {
+      window.setTimeout(() => initializeGoogleAuth(clientId, attempt + 1), 200);
+      return;
+    }
+
+    els.googleDisabledButton?.classList.remove("hidden");
+    setAuthMessage("Google sign-in could not load. Check the Google Client ID and allowed origins.", "error");
+    return;
+  }
+
+  els.googleDisabledButton?.classList.add("hidden");
   window.google.accounts.id.initialize({
     client_id: clientId,
+    ux_mode: "popup",
+    auto_select: false,
+    cancel_on_tap_outside: true,
     callback: async ({ credential }) => {
       try {
         setAuthMessage("Verifying Google sign-in...", "info");
@@ -576,12 +641,48 @@ function initializeGoogleAuth(clientId) {
   els.googleSigninButton.dataset.ready = "true";
 }
 
+function openSupportModal() {
+  els.supportModal.classList.remove("hidden");
+  els.supportSuccess.classList.add("hidden");
+  els.supportForm.classList.remove("hidden");
+  els.supportForm.querySelector("input")?.focus();
+}
+
+function closeSupportModal() {
+  els.supportModal.classList.add("hidden");
+}
+
+function sendSupportReport(event) {
+  event.preventDefault();
+  const formData = new FormData(els.supportForm);
+  const name = String(formData.get("name") || "").trim();
+  const email = String(formData.get("email") || "").trim();
+  const message = String(formData.get("message") || "").trim();
+  const subject = encodeURIComponent("Sentinel Scan Issue Report");
+  const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
+
+  window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
+  els.supportForm.classList.add("hidden");
+  els.supportSuccess.classList.remove("hidden");
+  window.setTimeout(() => els.supportForm.reset(), 300);
+}
 els.showLogin.addEventListener("click", () => switchAuthMode("login"));
 els.showSignup.addEventListener("click", () => switchAuthMode("signup"));
 els.themeToggle.addEventListener("click", () => {
   setTheme(document.body.dataset.theme === "dark" ? "light" : "dark");
 });
 els.logoutButton.addEventListener("click", () => logout());
+els.supportButton.addEventListener("click", openSupportModal);
+els.supportClose.addEventListener("click", closeSupportModal);
+els.supportModal.addEventListener("click", (event) => {
+  if (event.target === els.supportModal) closeSupportModal();
+});
+els.supportForm.addEventListener("submit", sendSupportReport);
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !els.supportModal.classList.contains("hidden")) {
+    closeSupportModal();
+  }
+});
 
 els.loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -621,18 +722,22 @@ els.form.addEventListener("submit", async (event) => {
   }
 
   els.scanButton.disabled = true;
+  revealResults(true);
+  revealHistory(true);
   setLoadingSkeleton(true);
+  setProgress(12);
   const progressMessages = [
-    "Validating target and starting passive scan.",
-    "Collecting transport and response posture.",
-    "Crawling same-origin pages and inventorying assets.",
-    "Scoring findings and preparing the report.",
+    { percent: 26, text: "Validating target and starting passive scan." },
+    { percent: 48, text: "Collecting transport and response posture." },
+    { percent: 72, text: "Crawling same-origin pages and inventorying assets." },
+    { percent: 88, text: "Scoring findings and preparing the report." },
   ];
   let step = 0;
-  setStatus("loading", progressMessages[step]);
+  setStatus("loading", progressMessages[step].text);
   const progressTimer = setInterval(() => {
     step = Math.min(progressMessages.length - 1, step + 1);
-    setStatus("loading", progressMessages[step]);
+    setProgress(progressMessages[step].percent);
+    setStatus("loading", progressMessages[step].text);
   }, 1800);
 
   try {
@@ -672,12 +777,15 @@ els.form.addEventListener("submit", async (event) => {
       findings: scan.summary.total,
     })).reverse();
 
-    updateDashboard(payload);
+    setProgress(100);
+    updateDashboard(payload, { reveal: true });
     setStatus("success", `Scan complete for ${payload.finalUrl}.`);
   } catch (error) {
     setStatus("error", error.message || "Scan failed.");
+    if (!state.activeScan) revealResults(false);
   } finally {
     clearInterval(progressTimer);
+    window.setTimeout(() => setProgress(0), 900);
     setLoadingSkeleton(false);
     els.scanButton.disabled = false;
   }
@@ -687,12 +795,16 @@ els.historyList.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-scan-id]");
   if (!button) return;
   try {
+    revealResults(true);
     setStatus("loading", "Loading saved scan.");
     setLoadingSkeleton(true);
+    setProgress(50);
     await loadScan(button.dataset.scanId);
+    setProgress(100);
   } catch (error) {
     setStatus("error", error.message || "Unable to load the selected scan.");
   } finally {
+    window.setTimeout(() => setProgress(0), 700);
     setLoadingSkeleton(false);
   }
 });
@@ -723,6 +835,8 @@ const savedTheme = localStorage.getItem("sentinelTheme");
 if (savedTheme) setTheme(savedTheme);
 els.statusSpinner.hidden = true;
 setAuthenticated(false);
+revealResults(false);
+revealHistory(false);
 updateDownloadButtons(false);
 switchAuthMode("login");
 renderSummary(null);
@@ -732,7 +846,13 @@ renderMemo(null);
 renderCoverage(null);
 renderFindings();
 setLoadingSkeleton(false);
+setProgress(0);
 
 Promise.all([loadAuthConfig(), restoreSession()]).catch(() => {
   setAuthenticated(false);
+  revealResults(false);
+  revealHistory(false);
 });
+
+
+

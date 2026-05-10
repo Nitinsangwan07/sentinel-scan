@@ -24,6 +24,7 @@ export const me = asyncHandler(async (request, response) => {
 });
 
 export const authConfig = asyncHandler(async (request, response) => {
+  response.set("Cache-Control", "no-store");
   response.json({
     googleClientId: appConfig.googleClientId || "",
     googleEnabled: Boolean(appConfig.googleClientId),
